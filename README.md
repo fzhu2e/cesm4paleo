@@ -1,2 +1,2 @@
 # cesm4paleo
-Scripts to setup paleo-simulations with CESM.
+Scripts to set up & run paleo-simulations with CESM.
