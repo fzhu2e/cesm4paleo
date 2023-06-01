@@ -25,6 +25,7 @@ class PaleoCase:
                   url_create_ESMF_map_sh='https://github.com/CESM-Development/paleoToolkit/trunk/cesm1_2/rof/create_ESMF_map.sh',
                   ):
         # Step 19
+        utils.p_header('>>> Prep topo file at proper resolution ...')
         fpath = utils.svn_export(url_create_topo_ncl)
         utils.replace_str(
             fpath,
@@ -33,9 +34,10 @@ class PaleoCase:
                 '<input_topo-bath_filename>': topo_path,
             },
         )
-        utils.run_shell(f'ncl {fpath}', timeout=3)
+        utils.run_shell(f'source /glade/u/apps/ch/opt/lmod/8.7.13/lmod/lmod/init/zsh && module load ncl && ncl {fpath}', timeout=3)
         
         # Step 20
+        utils.p_header('>>> Generate runoff data from topo inputs ...')
         fpath_new = utils.svn_export(url_rdirc_template_csh, f'./rdirc_{self.casename}.csh')
         utils.replace_str(
             fpath_new,
@@ -57,12 +59,14 @@ class PaleoCase:
         utils.exec_script(fpath_new)
 
         # Step 21
+        utils.p_header('>>> Plot runoff ...')
         fpath = utils.svn_export(url_plotrdirc_csh)
         utils.replace_str(
             fpath,
             {
                 '<casename>': self.casename,
                 '<topography-bathymetry_file>': os.path.basename(topo_path),
+                'ncl < plot_rdirc.ncl': '/glade/u/apps/ch/opt/ncl/6.6.2/intel/19.1.1/bin/ncl < plot_rdirc.ncl',
             },
         )
         fpath_ncl = utils.svn_export(url_plotrdirc_ncl)
@@ -78,6 +82,7 @@ class PaleoCase:
         utils.exec_script(fpath)
 
         # Step 24
+        utils.p_header('>>> Convert runoff file to netcdf ...')
         fpath = utils.svn_export(url_rtm_ncdf_pro)
         
         utils.replace_str(
@@ -94,6 +99,7 @@ class PaleoCase:
         utils.run_shell('source /glade/u/apps/ch/opt/lmod/8.7.13/lmod/lmod/init/zsh && module load idl && printf ".rn rtm_ncdf\nrtm\nexit\n" | idl')
 
         # Step 25
+        utils.p_header('>>> Create runoff to ocean mapping file (part 1) ...')
         fpath = utils.svn_export(url_runoff_map)
         fpath_new = utils.svn_export(url_runoff_map_template_nml,  f'./runoff_map.1x1.{self.casename}.nml')
         utils.replace_str(
@@ -109,6 +115,7 @@ class PaleoCase:
         utils.exec_script(fpath)
 
         # Step 26
+        utils.p_header('>>> Create runoff to ocean mapping file (part 2) ...')
         fpath = utils.svn_export(url_create_ESMF_map_sh)
         ocnres = f'gx1{self.casename}'
         fsrc = os.path.join(grids_dirpath, '1x1d.nc')
@@ -116,6 +123,7 @@ class PaleoCase:
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r1_nomask -fdst {fdst} -ndst {ocnres} -map aave')
 
         # Step 27
+        utils.p_header('>>> Create runoff to/from land mapping files - needed if rof at 1deg rather than 0.5 deg ...')
         fsrc = os.path.join(grids_dirpath, 'fv1.9x2.5_141008.nc')
         fdst = os.path.join(grids_dirpath, '1x1d_lonshift.nc')
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
