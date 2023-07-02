@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import colorama as ca
 from tqdm import tqdm
@@ -52,6 +53,13 @@ def svn_export(url, fpath=None):
     if os.path.exists(fpath): os.remove(fpath)
     run_shell(f'svn export {url} {fpath}')
     return fpath
+
+def copy(src, dst=None):
+    if dst is None:
+        dst = os.path.basename(src)
+
+    shutil.copyfile(src, dst)
+    return dst
 
 def exec_script(fpath, args=None, timeout=None):
     run_shell(f'chmod +x {fpath}')
