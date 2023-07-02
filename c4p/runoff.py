@@ -14,12 +14,12 @@ class Runoff:
             self.__dict__[k] = v
 
         self.grids_dirpath='/glade/p/cesmdata/inputdata/share/scripgrids' if grids_dirpath is None else grids_dirpath
-        self.path_create_ESMF_map_sh=os.path.join(cwd, '../src/rof/create_ESMF_map.sh') if path_create_ESMF_map_sh is None else path_create_ESMF_map_sh
+        self.path_create_ESMF_map_sh=os.path.join(cwd, './src/rof/create_ESMF_map.sh') if path_create_ESMF_map_sh is None else path_create_ESMF_map_sh
 
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> Runoff.{k}: {v}')
         
-    def prep_topo(self, topo_path, path_create_topo_ncl=os.path.join(cwd, '../src/rof/create-topo_1x1deg.ncl')):
+    def prep_topo(self, topo_path, path_create_topo_ncl=os.path.join(cwd, './src/rof/create-topo_1x1deg.ncl')):
         # Step 19
         utils.p_header('>>> Prep topo file at proper resolution ...')
         fpath = utils.copy(path_create_topo_ncl)
@@ -33,9 +33,9 @@ class Runoff:
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath}', timeout=3)
 
     def gen_runoff(self,
-            path_rdirc_template_csh=os.path.join(cwd, '../src/rof/rdirc_template.csh'),
-            path_topo2rdirc_sed_f90=os.path.join(cwd, '../src/rof/topo2rdirc_sed.F90'),
-            path_Makefile=os.path.join(cwd, '../src/rof/Makefile'),
+            path_rdirc_template_csh=os.path.join(cwd, './src/rof/rdirc_template.csh'),
+            path_topo2rdirc_sed_f90=os.path.join(cwd, './src/rof/topo2rdirc_sed.F90'),
+            path_Makefile=os.path.join(cwd, './src/rof/Makefile'),
         ):
         # Step 20
         utils.p_header('>>> Generate runoff data from topo inputs ...')
@@ -67,8 +67,8 @@ class Runoff:
         utils.exec_script(fpath_new)
 
     def plot_runoff(self, topo_path,
-            path_plotrdirc_csh=os.path.join(cwd, '../src/rof/plotrdirc.csh'),
-            path_plotrdirc_ncl=os.path.join(cwd, '../src/rof/plot_rdirc.ncl'),
+            path_plotrdirc_csh=os.path.join(cwd, './src/rof/plotrdirc.csh'),
+            path_plotrdirc_ncl=os.path.join(cwd, './src/rof/plot_rdirc.ncl'),
         ):
         # Step 21
         utils.p_header('>>> Plot runoff ...')
@@ -81,6 +81,7 @@ class Runoff:
             },
         )
         utils.copy(path_plotrdirc_ncl)
+        utils.run_shell(f'chmod +x {fpath}')
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ./{fpath}', timeout=3)
         display(
             Image('./rdirc_miocene_topo_pollard_antscape_dolan_0.5x0.5.nc.png')
@@ -141,8 +142,8 @@ class Runoff:
         ds.to_netcdf(output)
 
     def runoff2ocn_p1(self, ocn_scrp_path,
-            path_runoff_map=os.path.join(cwd, '../src/rof/runoff_map_1deg'),
-            path_runoff_map_template_nml=os.path.join(cwd, '../src/rof/runoff_map.1x1.template.nml'),
+            path_runoff_map=os.path.join(cwd, './src/rof/runoff_map_1deg'),
+            path_runoff_map_template_nml=os.path.join(cwd, './src/rof/runoff_map.1x1.template.nml'),
             meta_date=date.today().strftime('%Y%m%d'),
             ocnres=None,
         ):
@@ -163,31 +164,29 @@ class Runoff:
         )
         utils.run_shell(f'ln -s {fpath_new} ./runoff_map.nml')
         utils.exec_script(fpath)
+        self.ocn_scrp_path = ocn_scrp_path
 
-    def runoff2ocn_p2(self, ocn_scrp_path,
-            grids_dirpath='/glade/p/cesmdata/inputdata/share/scripgrids',
-            path_create_ESMF_map_sh=os.path.join(cwd, '../src/rof/create_ESMF_map.sh'),
-        ):
+    def runoff2ocn_p2(self, fsrc_fname='1x1d.nc'):
         # Step 26
         utils.p_header('>>> Create runoff to ocean mapping file (part 2) ...')
-        fpath = utils.copy(path_create_ESMF_map_sh)
+        fpath = utils.copy(self.path_create_ESMF_map_sh)
         ocnres = f'gx1{self.casename}'
-        fsrc = os.path.join(grids_dirpath, '1x1d.nc')
-        fdst = ocn_scrp_path
+        fsrc = os.path.join(self.grids_dirpath, fsrc_fname)
+        fdst = self.ocn_scrp_path
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r1_nomask -fdst {fdst} -ndst {ocnres} -map aave')
 
-    def runoff2land(self):
+    def runoff2land(self, fsrc_fname='fv1.9x2.5_141008.nc', fdst_fname='1x1d_lonshift.nc'):
         # Step 27
         utils.p_header('>>> Create runoff to land mapping files - needed if rof at 1deg rather than 0.5 deg ...')
         fpath = utils.copy(self.path_create_ESMF_map_sh)
-        fsrc = os.path.join(self.grids_dirpath, 'fv1.9x2.5_141008.nc')
-        fdst = os.path.join(self.grids_dirpath, '1x1d_lonshift.nc')
+        fsrc = os.path.join(self.grids_dirpath, fsrc_fname)
+        fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def land2runoff(self):
+    def land2runoff(self, fsrc_fname='1x1d_lonshift.nc', fdst_fname='fv1.9x2.5_141008.nc'):
         # Step 27
         utils.p_header('>>> Create land to runoff mapping files - needed if rof at 1deg rather than 0.5 deg ...')
         fpath = utils.copy(self.path_create_ESMF_map_sh)
-        fsrc = os.path.join(self.grids_dirpath, '1x1d_lonshift.nc')
-        fdst = os.path.join(self.grids_dirpath, 'fv1.9x2.5_141008.nc')
+        fsrc = os.path.join(self.grids_dirpath, fsrc_fname)
+        fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
