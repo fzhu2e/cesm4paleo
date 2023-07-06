@@ -61,9 +61,28 @@ def copy(src, dst=None):
     shutil.copyfile(src, dst)
     return dst
 
-def exec_script(fpath, args=None, timeout=None):
-    run_shell(f'chmod +x {fpath}')
+def exec_script(fpath, args=None, timeout=None, chmod_add_x=True):
+    if chmod_add_x:
+        run_shell(f'chmod +x {fpath}')
+
     if args is None:
-        run_shell(f'./{fpath}', timeout=timeout)
+        cmd = fpath
     else:
-        run_shell(f'./{fpath} {args}', timeout=timeout)
+        cmd = f'{fpath} {args}'
+
+    run_shell(cmd, timeout=timeout)
+
+def qsub_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+    if account is None:
+        raise ValueError('account must be specified')
+
+    if args is None:
+        cmd = fpath
+    else:
+        cmd = f'{fpath} {args}'
+
+    l1 = f'select={select}:ncpus={ncpus}:mpiprocs={mpiprocs}:mem={mem}GB'
+    l2 = f'walltime={walltime}'
+    
+    run_shell(f'echo -e {cmd} | qsub -N {name} -q {queue} -l {l1} -l {l2} -A {account}')
+    
