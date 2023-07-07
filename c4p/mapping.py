@@ -6,23 +6,22 @@ from . import utils
 cwd = os.path.dirname(__file__)
 
 class Mapping:
-    '''Generate mapping and domain files'''
-    def __init__(self, atm_scrip=None, ocn_scrip=None, rof_scrip=None, atm_grid_name=None, ocn_grid_name=None, rof_grid_name=None,
-                 gen_cesm_maps_script=None, gen_esmf_map_script=None, gen_domain_exe=None, job_name=None, **kwargs):
+    def __init__(self, atm_grid, ocn_grid, rof_grid, job_name=None,
+                 gen_cesm_maps_script=None, gen_esmf_map_script=None, gen_domain_exe=None, **kwargs):
+        '''Generate mapping and domain files
 
+        Args:
+            atm_grid (dict): grid information for atm in the format of {grid_name: path_to_scrip_file}
+            ocn_grid (dict): grid information for ocn in the format of {grid_name: path_to_scrip_file}
+            rof_grid (dict): grid information for rof in the format of {grid_name: path_to_scrip_file}
+        '''
         for k, v in kwargs.items():
             self.__dict__[k] = v
 
         self.job_name = 'mapping' if job_name is None else job_name
-
-        # a set of default scrip files and grid names for ne16_g16
-        scripgrids_dir = '/glade/p/cesmdata/inputdata/share/scripgrids'
-        self.atm_scrip = os.path.join(scripgrids_dir, 'ne16np4_scrip_171002.nc') if atm_scrip is None else atm_scrip
-        self.ocn_scrip = os.path.join(scripgrids_dir, 'gx1v6_090205.nc') if ocn_scrip is None else ocn_scrip
-        self.rof_scrip = os.path.join(scripgrids_dir, '1x1d.nc') if rof_scrip is None else rof_scrip
-        self.atm_grid_name = 'ne16np4' if atm_grid_name is None else atm_grid_name
-        self.ocn_grid_name = 'gx1v6' if ocn_grid_name is None else ocn_grid_name
-        self.rof_grid_name = 'r1_nomask' if rof_grid_name is None else rof_grid_name
+        self.atm_grid_name, self.atm_scrip  = list(atm_grid.keys())[0], list(atm_grid.values())[0]
+        self.ocn_grid_name, self.ocn_scrip  = list(ocn_grid.keys())[0], list(ocn_grid.values())[0]
+        self.rof_grid_name, self.rof_scrip  = list(rof_grid.keys())[0], list(rof_grid.values())[0]
 
         # paths for mapping and domain generation scripts
         self.gen_cesm_maps_script = os.path.join(cwd, './src/cime_mapping/gen_cesm_maps.ncpu36.sh') if gen_cesm_maps_script is None else gen_cesm_maps_script
@@ -74,4 +73,4 @@ class Mapping:
         )
 
     def clean(self):
-        utils.run_shell(f'rm -rf {self.job_name}.* PET*')
+        utils.run_shell(f'rm -rf {self.job_name}.* PET* pbs_*')
