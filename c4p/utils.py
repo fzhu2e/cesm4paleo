@@ -95,13 +95,20 @@ def make_pbs(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mp
 
     p_success(f'>>> {fname} created')
 
-def qsub_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, create_pbs=True, **env_vars):
+def qsub_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+    if account is None:
+        raise ValueError('account must be specified')
+
+    make_pbs(fpath, args=args, name=name, queue=queue, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
+    run_shell(f'qsub pbs_{name}.zsh')
+    
+def qcmd_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, **env_vars):
+    if account is None:
+        raise ValueError('account must be specified')
+
     env_str = ''
     for k, v in env_vars.items():
         env_str += f'{k}="{v},"'
-        
-    if account is None:
-        raise ValueError('account must be specified')
 
     if args is None:
         cmd = fpath
@@ -111,9 +118,4 @@ def qsub_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36,
     l1 = f'select={select}:ncpus={ncpus}:mpiprocs={mpiprocs}:mem={mem}GB'
     l2 = f'walltime={walltime}'
 
-    if create_pbs:
-        make_pbs(fpath, args=args, name=name, queue=queue, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
-        run_shell(f'qsub pbs_{name}.zsh')
-    else:
-        run_shell(f'qsub -N {name} -q {queue} -l {l1} -l {l2} -A {account} -v {env_str} -- {cmd}')
-    
+    run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2} -A {account} -- {cmd}')

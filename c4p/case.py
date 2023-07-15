@@ -30,6 +30,6 @@ class PaleoCase:
             gen_domain_exe=gen_domain_exe, **self.__dict__,
         )
 
-    def setup_runoff(self):
+    def setup_rof(self):
         return ROF(**self.__dict__)
         
