@@ -1,6 +1,6 @@
-***********************************************************
-`c4p`: a Python package for CESM paleoclimate setup
-***********************************************************
+************************************************************
+`c4p`: a Python package for paleoclimate research using CESM
+************************************************************
 
 `c4p` stands for `cesm4paleo`, or "CESM for paleoclimate research".
 It aims to provide a user-friendly toolkit for paleoclimate research using CESM.
