@@ -1,9 +1,9 @@
-************************************************************
-`c4p`: a Python package for paleoclimate research using CESM
-************************************************************
+******************************
+CESM for Paleoclimate Research
+******************************
 
-`c4p` stands for `cesm4paleo`, or "CESM for paleoclimate research".
-It aims to provide a user-friendly toolkit for paleoclimate research using CESM.
+This website introduces how to setup and run CESM for paleoclimate research.
+It comes with a Python package named `c4p` that stands for `cesm4paleo`, which aims to provide a user-friendly toolkit for paleoclimate research using CESM.
 Specifically, it provides Pythonic workflows for
 
 + the setup of boundary conditions for paleoclimate simulations
@@ -16,7 +16,7 @@ Note: the current version of `c4p` assumes the runtime environment is the NCAR m
 .. grid:: 1 1 2 2
     :gutter: 2
 
-    .. grid-item-card::  Installation
+    .. grid-item-card::  Installation of `c4p`
         :class-title: custom-title
         :class-body: custom-body
         :img-top: _static/installation.png
@@ -58,4 +58,6 @@ Note: the current version of `c4p` assumes the runtime environment is the NCAR m
    :caption: User Guide
 
    ug-installation
+   ug-bc_setup
+   ug-run
    ug-api
