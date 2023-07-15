@@ -28,8 +28,8 @@ Note: the current version of `c4p` assumes the runtime environment is the NCAR m
     .. grid-item-card::  Boundary Condition Setup
         :class-title: custom-title
         :class-body: custom-body
-        :img-top: _static/bc_setup.png
-        :link: ug-bc_setup
+        :img-top: _static/setup.png
+        :link: ug-setup
         :link-type: doc
 
         Instructions on boundary condition setup.
