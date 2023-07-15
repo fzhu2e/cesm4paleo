@@ -2,7 +2,7 @@
 CESM for Paleoclimate Research
 ******************************
 
-This website introduces how to setup and run CESM for paleoclimate research.
+This website introduces how to set up and run CESM for paleoclimate research.
 It comes with a Python package named `c4p` that stands for `cesm4paleo`, which aims to provide a user-friendly toolkit for paleoclimate research using CESM.
 Specifically, it provides Pythonic workflows for
 
