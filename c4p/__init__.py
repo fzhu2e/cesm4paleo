@@ -1,4 +1,6 @@
 from .case import PaleoCase
+from .case import Mapping
+from .case import ROF
 
 # get the version
 from importlib.metadata import version

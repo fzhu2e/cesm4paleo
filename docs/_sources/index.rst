@@ -58,6 +58,6 @@ Note: the current version of `c4p` assumes the runtime environment is the NCAR m
    :caption: User Guide
 
    ug-installation
-   ug-bc_setup
+   ug-setup
    ug-run
    ug-api

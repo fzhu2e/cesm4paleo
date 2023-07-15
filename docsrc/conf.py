@@ -16,7 +16,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'cesm4paleo'
-copyright = f'2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady'
+copyright = f'2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun.'
 
 
 # -- General configuration ---------------------------------------------------
@@ -35,7 +35,7 @@ exclude_patterns = [
     '_build',
     'Thumbs.db',
     '.DS_Store',
-    'test*.ipynb',  # notebooks starting with test won't be rendered
+    'notebooks/test/*.ipynb',  # notebooks under test won't be rendered
 ]
 
 extensions = [
