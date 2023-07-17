@@ -16,7 +16,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'cesm4paleo'
-copyright = f'2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun.'
+copyright = f'2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun'
 
 
 # -- General configuration ---------------------------------------------------

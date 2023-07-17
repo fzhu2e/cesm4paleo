@@ -7,7 +7,8 @@ cwd = os.path.dirname(__file__)
 
 class Mapping:
     def __init__(self, atm_grid, ocn_grid, rof_grid, job_name=None,
-                 gen_cesm_maps_script=None, gen_esmf_map_script=None, gen_domain_exe=None, **kwargs):
+                 gen_cesm_maps_script=None, gen_esmf_map_script=None, gen_domain_exe=None,
+                 **kwargs):
         '''Generate mapping and domain files
 
         Args:
@@ -62,6 +63,12 @@ class Mapping:
             args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.ocn_scrip} -ndst {self.ocn_grid_name} -map aave',
             name=self.job_name, account=self.account,
         )
+
+    def gen_mapping(self):
+        self.ocn2atm()
+        self.atm2rof()
+        self.rof2atm()
+        self.rof2ocn()
 
     def gen_domain(self):
         utils.p_header(f'>>> Creating ocean<->atmosphere domain files')

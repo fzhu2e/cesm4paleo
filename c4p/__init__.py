@@ -1,4 +1,5 @@
-from .case import PaleoCase
+from .case import PaleoSetup
+from .case import CESMCase
 from .case import Mapping
 from .case import ROF
 

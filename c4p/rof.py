@@ -9,12 +9,13 @@ from . import utils
 cwd = os.path.dirname(__file__)
 
 class ROF:
-    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, **kwargs):
+    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, rof2ocn_exe=None, **kwargs):
         for k, v in kwargs.items():
             self.__dict__[k] = v
 
         self.grids_dirpath='/glade/p/cesmdata/inputdata/share/scripgrids' if grids_dirpath is None else grids_dirpath
         self.path_create_ESMF_map_sh=os.path.join(cwd, './src/rof/create_ESMF_map.sh') if path_create_ESMF_map_sh is None else path_create_ESMF_map_sh
+        self.rof2ocn_exe = os.path.join(cwd, './src/cime_mapping/runoff_map_1deg') if rof2ocn_exe is None else rof2ocn_exe
 
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> Runoff.{k}: {v}')
@@ -22,17 +23,19 @@ class ROF:
     def prep_topo(self, topo_path, path_create_topo_ncl=os.path.join(cwd, './src/rof/create-topo_1x1deg.ncl')):
         # Step 19
         utils.p_header('>>> Prep topo file at proper resolution ...')
+        self.topo_path = topo_path
+        utils.p_success(f'>>> ROF.topo_path = "{topo_path}"')
         fpath = utils.copy(path_create_topo_ncl)
         utils.replace_str(
             fpath,
             {
                 '<casename>': self.casename,
-                '<input_topo-bath_filename>': topo_path,
+                '<input_topo-bath_filename>': self.topo_path,
             },
         )
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath}', timeout=3)
 
-    def gen_runoff(self,
+    def gen_rof(self,
             path_rdirc_template_csh=os.path.join(cwd, './src/rof/rdirc_template.csh'),
             path_topo2rdirc_sed_f90=os.path.join(cwd, './src/rof/topo2rdirc_sed.F90'),
             path_Makefile=os.path.join(cwd, './src/rof/Makefile'),
@@ -66,7 +69,7 @@ class ROF:
         )
         utils.exec_script(fpath_new)
 
-    def plot_runoff(self, topo_path,
+    def plot_rof(self,
             path_plotrdirc_csh=os.path.join(cwd, './src/rof/plotrdirc.csh'),
             path_plotrdirc_ncl=os.path.join(cwd, './src/rof/plot_rdirc.ncl'),
         ):
@@ -77,7 +80,7 @@ class ROF:
             fpath,
             {
                 '<casename>': self.casename,
-                '<topography-bathymetry_file>': os.path.basename(topo_path),
+                '<topography-bathymetry_file>': os.path.basename(self.topo_path),
             },
         )
         utils.copy(path_plotrdirc_ncl)
@@ -87,7 +90,7 @@ class ROF:
             Image('./rdirc_miocene_topo_pollard_antscape_dolan_0.5x0.5.nc.png')
         )
 
-    def runoff2nc(self, input=None, output=None, res='1x1',
+    def rof2nc(self, input=None, output=None, res='1x1',
                   meta_user='Feng Zhu', meta_date=date.today().strftime('%Y%m%d')):
         input = f'fort.13_{self.casename}' if input is None else input
         output = f'rdirc.{res}.{self.casename}.nc' if output is None else output
@@ -141,7 +144,7 @@ class ROF:
         # Save dataset to netCDF file
         ds.to_netcdf(output)
 
-    def runoff2ocn_p1(self, ocn_scrp_path,
+    def rof2ocn_p1(self, ocn_scrp_path,
             path_runoff_map=os.path.join(cwd, './src/rof/runoff_map_1deg'),
             path_runoff_map_template_nml=os.path.join(cwd, './src/rof/runoff_map.1x1.template.nml'),
             meta_date=date.today().strftime('%Y%m%d'),
@@ -166,7 +169,7 @@ class ROF:
         utils.exec_script(fpath)
         self.ocn_scrp_path = ocn_scrp_path
 
-    def runoff2ocn_p2(self, fsrc_fname='1x1d.nc'):
+    def rof2ocn_p2(self, fsrc_fname='1x1d.nc'):
         # Step 26
         utils.p_header('>>> Create runoff to ocean mapping file (part 2) ...')
         fpath = utils.copy(self.path_create_ESMF_map_sh)
@@ -175,7 +178,7 @@ class ROF:
         fdst = self.ocn_scrp_path
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r1_nomask -fdst {fdst} -ndst {ocnres} -map aave')
 
-    def runoff2land(self, fsrc_fname='fv1.9x2.5_141008.nc', fdst_fname='1x1d_lonshift.nc'):
+    def rof2lnd(self, fsrc_fname='fv1.9x2.5_141008.nc', fdst_fname='1x1d_lonshift.nc'):
         # Step 27
         utils.p_header('>>> Create runoff to land mapping files - needed if rof at 1deg rather than 0.5 deg ...')
         fpath = utils.copy(self.path_create_ESMF_map_sh)
@@ -183,10 +186,34 @@ class ROF:
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def land2runoff(self, fsrc_fname='1x1d_lonshift.nc', fdst_fname='fv1.9x2.5_141008.nc'):
+    def lnd2rof(self, fsrc_fname='1x1d_lonshift.nc', fdst_fname='fv1.9x2.5_141008.nc'):
         # Step 27
         utils.p_header('>>> Create land to runoff mapping files - needed if rof at 1deg rather than 0.5 deg ...')
         fpath = utils.copy(self.path_create_ESMF_map_sh)
         fsrc = os.path.join(self.grids_dirpath, fsrc_fname)
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
+
+    def gen_rmap(self, ocn_grid, rof_grid_name):
+        utils.p_header(f'>>> Creating ROF2OCN_RMAP file')
+        ocn_grid_name, ocn_scrip  = list(ocn_grid.keys())[0], list(ocn_grid.values())[0]
+        date_today = date.today().strftime('%y%m%d')
+        fpath = utils.copy(self.rof2ocn_exe)
+        utils.write_file(f'runoff_map.nml', f'''
+        &input_nml
+         gridtype     = 'rtm'
+         file_roff    = 'fort.13_{self.casename}'
+         file_ocn     = '{ocn_scrip}'
+         file_nn      = 'map_{rof_grid_name}_to_{ocn_grid_name}_nn.{date_today}.nc'
+         file_smooth  = 'map_{rof_grid_name}_to_{ocn_grid_name}_sm_e1000r300.{date_today}.nc'
+         file_new     = 'map_{rof_grid_name}_to_{ocn_grid_name}_nnsm_e1000r300.{date_today}.nc'
+         title        = 'runoff map: {rof_grid_name} -> ${ocn_grid_name}, nearest neighbor and smoothed'
+         eFold        = 1000000.0
+         rMax         =  300000.0
+         step1 = .true.
+         step2 = .true.
+         step3 = .true.
+        /
+        ''')
+        utils.run_shell(f'chmod +x {fpath}')
+        utils.qsub_script(fpath, name='gen_rmap', account=self.account)

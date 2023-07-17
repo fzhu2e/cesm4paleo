@@ -56,7 +56,7 @@ def svn_export(url, fpath=None):
 
 def copy(src, dst=None):
     if dst is None:
-        dst = os.path.basename(src)
+        dst = os.path.abspath(os.path.basename(src))
 
     shutil.copyfile(src, dst)
     return dst
@@ -119,3 +119,10 @@ def qcmd_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36,
     l2 = f'walltime={walltime}'
 
     run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2} -A {account} -- {cmd}')
+
+def write_file(fname, content=None, mode='w'):
+    if content is None:
+        raise ValueError('Please assign the value for `content`.')
+
+    with open(fname, mode) as f:
+        f.write(f'''{content}''')
