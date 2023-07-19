@@ -85,7 +85,7 @@ class ROF:
         )
         utils.copy(path_plotrdirc_ncl)
         utils.run_shell(f'chmod +x {fpath}')
-        utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ./{fpath}', timeout=3)
+        utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && {fpath}', timeout=3)
         display(
             Image('./rdirc_miocene_topo_pollard_antscape_dolan_0.5x0.5.nc.png')
         )
