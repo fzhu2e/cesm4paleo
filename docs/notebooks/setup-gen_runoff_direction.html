@@ -368,8 +368,8 @@ document.write(`
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2023.7.7
-derecho6
+2023.7.19
+derecho8
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -436,7 +436,7 @@ derecho6
 <div class="highlight"><pre>
 <span class="ansi-cyan-intense-fg ansi-bold">&gt;&gt;&gt; Prep topo file at proper resolution ...
 </span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; ROF.topo_path = &#34;/glade/work/jiangzhu/data/inputdata/miocene/miocene_topo_pollard_antscape_dolan_0.5x0.5.nc&#34;
-</span>CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl create-topo_1x1deg.ncl
+</span>CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl /glade/work/fengzhu/Projects/c4p_gen_runoff_direction/create-topo_1x1deg.ncl
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -502,8 +502,8 @@ cp: &#39;topo.1x1deg.Miocene.nc&#39; and &#39;./topo.1x1deg.Miocene.nc&#39; are 
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 <span class="ansi-cyan-intense-fg ansi-bold">&gt;&gt;&gt; Plot runoff ...
-</span>CMD &gt;&gt;&gt; chmod +x plotrdirc.csh
-CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ./plotrdirc.csh
+</span>CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_gen_runoff_direction/plotrdirc.csh
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; /glade/work/fengzhu/Projects/c4p_gen_runoff_direction/plotrdirc.csh
  Copyright (C) 1995-2019 - All Rights Reserved
  University Corporation for Atmospheric Research
  NCAR Command Language Version 6.6.2
@@ -551,7 +551,7 @@ warning:asciiread: No elements read from file, returning a single element with t
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">case_rof</span><span class="o">.</span><span class="n">gen_rmap</span><span class="p">(</span>
@@ -570,7 +570,47 @@ warning:asciiread: No elements read from file, returning a single element with t
 </span>CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_gen_runoff_direction/runoff_map_1deg
 <span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; pbs_gen_rmap.zsh created
 </span>CMD &gt;&gt;&gt; qsub pbs_gen_rmap.zsh
-1241743.desched1
+1242580.desched1
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-blue-intense-fg ansi-bold">.</span>
+├── create-topo_1x1deg.ncl
+├── fort.10_Miocene
+├── fort.11_Miocene
+├── fort.12_Miocene
+├── fort.13_Miocene
+├── fort.14_Miocene
+├── fort.15_Miocene
+├── Makefile
+├── pathname.sed
+├── pbs_gen_rmap.zsh
+├── <span class="ansi-green-intense-fg ansi-bold">plotrdirc.csh</span>
+├── plot_rdirc.ncl
+├── rdirc.1x1.Miocene
+├── rdirc.1x1.Miocene.nc
+├── <span class="ansi-green-intense-fg ansi-bold">rdirc_Miocene.csh</span>
+├── rdirc_miocene_topo_pollard_antscape_dolan_0.5x0.5.nc.png
+├── <span class="ansi-green-intense-fg ansi-bold">runoff_map_1deg</span>
+├── runoff_map.nml
+├── topo.1x1deg.Miocene.nc
+├── <span class="ansi-green-intense-fg ansi-bold">topo2rdirc</span>
+├── topo2rdirc.F90
+└── topo2rdirc_sed.F90
+
+0 directories, 22 files
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
