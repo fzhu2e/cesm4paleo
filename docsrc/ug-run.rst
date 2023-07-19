@@ -4,4 +4,4 @@ Run the Simulations
 .. toctree::
     :maxdepth: 1
 
-    .. notebooks/
+    notebooks/run-Miocene_lowres

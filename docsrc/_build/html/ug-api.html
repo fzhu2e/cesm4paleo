@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'ug-api';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Run the Simulations" href="ug-run.html" />
+    <link rel="prev" title="Run Miocene Low-resolution Simulation" href="notebooks/run-Miocene_lowres.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -141,7 +141,8 @@
 <li class="toctree-l2"><a class="reference internal" href="notebooks/setup-gen_mapping_domain.html">Generate Mapping and Domain Files</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="ug-run.html">Run the Simulations</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="ug-run.html">Run the Simulations</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/run-Miocene_lowres.html">Run Miocene Low-resolution Simulation</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">API Reference</a></li>
@@ -339,10 +340,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleocase">PaleoCase</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.PaleoCase.mapping"><code class="docutils literal notranslate"><span class="pre">mapping</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleocase">PaleoCase</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping">Mapping</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.ocn2atm"><code class="docutils literal notranslate"><span class="pre">ocn2atm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.atm2rof"><code class="docutils literal notranslate"><span class="pre">atm2rof</span></code></a></li>
@@ -367,11 +365,6 @@ document.write(`
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h1>
 <section id="paleocase">
 <h2>PaleoCase<a class="headerlink" href="#paleocase" title="Permalink to this heading">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="c4p.PaleoCase.mapping">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">c4p.PaleoCase.</span></span><span class="sig-name descname"><span class="pre">mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atm_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ocn_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rof_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_cesm_maps_script</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_esmf_map_script</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_domain_exe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#c4p.PaleoCase.mapping" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </section>
 <section id="mapping">
 <h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this heading">#</a></h2>
@@ -421,12 +414,12 @@ document.write(`
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ug-run.html"
+       href="notebooks/run-Miocene_lowres.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Run the Simulations</p>
+        <p class="prev-next-title">Run Miocene Low-resolution Simulation</p>
       </div>
     </a>
 </div></div>
@@ -447,10 +440,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleocase">PaleoCase</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.PaleoCase.mapping"><code class="docutils literal notranslate"><span class="pre">mapping</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleocase">PaleoCase</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping">Mapping</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.ocn2atm"><code class="docutils literal notranslate"><span class="pre">ocn2atm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.atm2rof"><code class="docutils literal notranslate"><span class="pre">atm2rof</span></code></a></li>
@@ -479,7 +469,7 @@ document.write(`
     
   <p class="copyright">
     
-      © Copyright 2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun..
+      © Copyright 2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun.
       <br/>
     
   </p>

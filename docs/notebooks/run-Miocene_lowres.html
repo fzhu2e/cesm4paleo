@@ -1,0 +1,1358 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Run Miocene Low-resolution Simulation &#8212; cesm4paleo  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/run-Miocene_lowres';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../ug-api.html" />
+    <link rel="prev" title="Run the Simulations" href="../ug-run.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/NCAR-logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../_static/NCAR-logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../ug-installation.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ug-setup.html">Boundary Condition Setup</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup-gen_mapping_domain.html">Generate Mapping and Domain Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../ug-run.html">Run the Simulations</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Run Miocene Low-resolution Simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ug-api.html">API Reference</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fzhu2e/cesm4paleo" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fzhu2e/cesm4paleo/edit/main/notebooks/run-Miocene_lowres.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fzhu2e/cesm4paleo/issues/new?title=Issue%20on%20page%20%2Fnotebooks/run-Miocene_lowres.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/notebooks/run-Miocene_lowres.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Run Miocene Low-resolution Simulation</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="Run-Miocene-Low-resolution-Simulation">
+<h1>Run Miocene Low-resolution Simulation<a class="headerlink" href="#Run-Miocene-Low-resolution-Simulation" title="Permalink to this heading">#</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">c4p</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c4p</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="o">!</span>hostname
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2023.7.7
+derecho6
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">case</span> <span class="o">=</span> <span class="n">c4p</span><span class="o">.</span><span class="n">CESMCase</span><span class="p">(</span>
+    <span class="n">account</span><span class="o">=</span><span class="s1">&#39;UBRN0018&#39;</span><span class="p">,</span>
+    <span class="n">casename</span><span class="o">=</span><span class="s1">&#39;b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001&#39;</span><span class="p">,</span>
+    <span class="c1"># codebase=&#39;/glade/p/cesm/palwg/paleoweather/cesm_tags/iCESM1.3.0&#39;,</span>
+    <span class="n">codebase</span><span class="o">=</span><span class="s1">&#39;/glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu&#39;</span><span class="p">,</span>
+    <span class="n">res</span><span class="o">=</span><span class="s1">&#39;ne16_g16&#39;</span><span class="p">,</span>
+    <span class="n">compset</span><span class="o">=</span><span class="s1">&#39;1850_CAM50_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV&#39;</span><span class="p">,</span>
+    <span class="n">case_root</span><span class="o">=</span><span class="s1">&#39;/glade/work/fengzhu/CESM_cases&#39;</span><span class="p">,</span>
+    <span class="n">output_root</span><span class="o">=</span><span class="s1">&#39;/glade/derecho/scratch/fengzhu/CESM_output&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.account: UBRN0018
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.casename: b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.res: ne16_g16
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.machine: derecho
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.compset: 1850_CAM50_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.codebase: /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.case_dirpath: /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.output_root: /glade/derecho/scratch/fengzhu/CESM_output
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; CESMCase.output_dirpath: /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+</span>
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">run_unsupported</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/scripts/create_newcase --case /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001 --res ne16_g16 --compset 1850_CAM50_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV --output-root /glade/derecho/scratch/fengzhu/CESM_output --run-unsupported
+Compset longname is 1850_CAM50_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV
+Compset specification file is /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime_config/config_compsets.xml
+Compset forcing is 1850
+ATM component is CAM cam5 physics:
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Warning: missing non-idmap ATM2OCN_FMAPNAME for atm_grid, ne16np4 and ocn_grid gx1v6
+Warning: missing non-idmap ATM2OCN_SMAPNAME for atm_grid, ne16np4 and ocn_grid gx1v6
+Warning: missing non-idmap ATM2OCN_VMAPNAME for atm_grid, ne16np4 and ocn_grid gx1v6
+Warning: missing non-idmap OCN2ATM_FMAPNAME for atm_grid, ne16np4 and ocn_grid gx1v6
+Warning: missing non-idmap OCN2ATM_SMAPNAME for atm_grid, ne16np4 and ocn_grid gx1v6
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+LND component is clm4.0:Satellite phenology:
+ICE component is Sea ICE (cice) model version 4
+OCN component is POP2
+ROF component is RTM: River Transport Model
+GLC component is Stub glacier (land ice) component
+WAV component is Stub wave component
+ESP component is
+Pes     specification file is /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime_config/config_pes.xml
+Compset specific settings: name is FLDS_WISO and value is TRUE
+Compset specific settings: name is RUN_STARTDATE and value is 0001-01-01
+Compset specific settings: name is RUN_TYPE and value is hybrid
+Compset specific settings: name is RUN_REFDIR and value is ccsm4_init
+Machine is derecho
+Pes setting: grid          is a%ne16np4_l%ne16np4_oi%gx1v6_r%r05_g%null_w%null_m%gx1v6
+Pes setting: compset       is 1850_CAM50_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV
+Pes setting: tasks       is {&#39;NTASKS_ATM&#39;: -3, &#39;NTASKS_LND&#39;: -1, &#39;NTASKS_ROF&#39;: -1, &#39;NTASKS_ICE&#39;: -2, &#39;NTASKS_OCN&#39;: -1, &#39;NTASKS_GLC&#39;: -1, &#39;NTASKS_WAV&#39;: -1, &#39;NTASKS_CPL&#39;: -3}
+Pes setting: threads     is {&#39;NTHRDS_ATM&#39;: 1, &#39;NTHRDS_LND&#39;: 1, &#39;NTHRDS_ROF&#39;: 1, &#39;NTHRDS_ICE&#39;: 1, &#39;NTHRDS_OCN&#39;: 1, &#39;NTHRDS_GLC&#39;: 1, &#39;NTHRDS_WAV&#39;: 1, &#39;NTHRDS_CPL&#39;: 1}
+Pes setting: rootpe      is {&#39;ROOTPE_ATM&#39;: 0, &#39;ROOTPE_LND&#39;: 0, &#39;ROOTPE_ROF&#39;: 0, &#39;ROOTPE_ICE&#39;: -1, &#39;ROOTPE_OCN&#39;: -3, &#39;ROOTPE_GLC&#39;: 0, &#39;ROOTPE_WAV&#39;: 0, &#39;ROOTPE_CPL&#39;: 0}
+Pes setting: pstrid      is {}
+Pes other settings: {}
+Pes comments: none
+ Compset is: 1850_CAM50_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV
+ Grid is: a%ne16np4_l%ne16np4_oi%gx1v6_r%r05_g%null_w%null_m%gx1v6
+ Components in compset are: [&#39;cam&#39;, &#39;clm&#39;, &#39;cice&#39;, &#39;pop&#39;, &#39;rtm&#39;, &#39;sglc&#39;, &#39;swav&#39;, &#39;sesp&#39;, &#39;drv&#39;, &#39;dart&#39;]
+Using project from env PROJECT: UBRN0018
+No charge_account info available, using value from PROJECT
+cesm model version found: iCESM1.3.0
+Batch_system_type is pbs
+job is case.run USER_REQUESTED_WALLTIME None USER_REQUESTED_QUEUE None
+job is case.st_archive USER_REQUESTED_WALLTIME None USER_REQUESTED_QUEUE None
+ Creating Case directory /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_case.xml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles
+<span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; Current directory switched to: /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+</span>
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">xmlquery</span><span class="p">(</span><span class="s1">&#39;RUN_TYPE&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./xmlquery -p RUN_TYPE
+        RUN_TYPE: hybrid
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">xmlchange</span><span class="p">({</span>
+    <span class="s1">&#39;RUN_TYPE&#39;</span><span class="p">:</span> <span class="s1">&#39;startup&#39;</span><span class="p">,</span> <span class="s1">&#39;GET_REFCASE&#39;</span><span class="p">:</span> <span class="s1">&#39;FALSE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CAM_CONFIG_OPTS&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;-water_tracer h2o_h216o_hdo_h218o&quot; --append&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;OCN_TRACER_MODULES&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;iage wiso&quot;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLDS_WISO&#39;</span><span class="p">:</span> <span class="s1">&#39;TRUE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CLM_FORCE_COLDSTART&#39;</span><span class="p">:</span> <span class="s1">&#39;on&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CLM_BLDNML_OPTS&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;-ignore_warnings&quot; --append&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;OCN_NCPL&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;CPL_SEQ_OPTION&#39;</span><span class="p">:</span> <span class="s1">&#39;CESM1_MOD&#39;</span><span class="p">,</span> <span class="c1"># daily coupling</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./xmlchange RUN_TYPE=startup
+CMD &gt;&gt;&gt; ./xmlchange GET_REFCASE=FALSE
+CMD &gt;&gt;&gt; ./xmlchange CAM_CONFIG_OPTS=&#34;-water_tracer h2o_h216o_hdo_h218o&#34; --append
+CMD &gt;&gt;&gt; ./xmlchange OCN_TRACER_MODULES=&#34;iage wiso&#34;
+CMD &gt;&gt;&gt; ./xmlchange FLDS_WISO=TRUE
+CMD &gt;&gt;&gt; ./xmlchange CLM_FORCE_COLDSTART=on
+CMD &gt;&gt;&gt; ./xmlchange CLM_BLDNML_OPTS=&#34;-ignore_warnings&#34; --append
+CMD &gt;&gt;&gt; ./xmlchange OCN_NCPL=1
+CMD &gt;&gt;&gt; ./xmlchange CPL_SEQ_OPTION=CESM1_MOD
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ntasks_atm</span> <span class="o">=</span> <span class="mi">468</span>
+<span class="n">ntasks_ocn</span> <span class="o">=</span> <span class="mi">108</span>
+<span class="n">ntasks_lnd</span> <span class="o">=</span> <span class="mi">144</span>
+<span class="n">ntasks_ice</span> <span class="o">=</span> <span class="mi">324</span>
+<span class="k">case</span><span class="o">.</span><span class="n">xmlchange</span><span class="p">({</span>
+    <span class="s1">&#39;NTASKS_CPL&#39;</span><span class="p">:</span> <span class="n">ntasks_atm</span><span class="p">,</span> <span class="s1">&#39;NTHRDS_CPL&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;ROOTPE_CPL&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;NTASKS_ATM&#39;</span><span class="p">:</span> <span class="n">ntasks_atm</span><span class="p">,</span> <span class="s1">&#39;NTHRDS_ATM&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;ROOTPE_ATM&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;NTASKS_LND&#39;</span><span class="p">:</span> <span class="n">ntasks_lnd</span><span class="p">,</span> <span class="s1">&#39;NTHRDS_LND&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ROOTPE_LND&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;NTASKS_ICE&#39;</span><span class="p">:</span> <span class="n">ntasks_ice</span><span class="p">,</span> <span class="s1">&#39;NTHRDS_ICE&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ROOTPE_ICE&#39;</span><span class="p">:</span> <span class="n">ntasks_lnd</span><span class="p">,</span>
+    <span class="s1">&#39;NTASKS_OCN&#39;</span><span class="p">:</span> <span class="n">ntasks_ocn</span><span class="p">,</span> <span class="s1">&#39;NTHRDS_OCN&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;ROOTPE_OCN&#39;</span><span class="p">:</span> <span class="n">ntasks_atm</span><span class="p">,</span>
+    <span class="s1">&#39;NTASKS_ROF&#39;</span><span class="p">:</span> <span class="n">ntasks_lnd</span><span class="p">,</span> <span class="s1">&#39;NTHRDS_ROF&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ROOTPE_ROF&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./xmlchange NTASKS_CPL=468
+CMD &gt;&gt;&gt; ./xmlchange NTHRDS_CPL=3
+CMD &gt;&gt;&gt; ./xmlchange ROOTPE_CPL=0
+CMD &gt;&gt;&gt; ./xmlchange NTASKS_ATM=468
+CMD &gt;&gt;&gt; ./xmlchange NTHRDS_ATM=3
+CMD &gt;&gt;&gt; ./xmlchange ROOTPE_ATM=0
+CMD &gt;&gt;&gt; ./xmlchange NTASKS_LND=144
+CMD &gt;&gt;&gt; ./xmlchange NTHRDS_LND=1
+CMD &gt;&gt;&gt; ./xmlchange ROOTPE_LND=0
+CMD &gt;&gt;&gt; ./xmlchange NTASKS_ICE=324
+CMD &gt;&gt;&gt; ./xmlchange NTHRDS_ICE=1
+CMD &gt;&gt;&gt; ./xmlchange ROOTPE_ICE=144
+CMD &gt;&gt;&gt; ./xmlchange NTASKS_OCN=108
+CMD &gt;&gt;&gt; ./xmlchange NTHRDS_OCN=3
+CMD &gt;&gt;&gt; ./xmlchange ROOTPE_OCN=468
+CMD &gt;&gt;&gt; ./xmlchange NTASKS_ROF=144
+CMD &gt;&gt;&gt; ./xmlchange NTHRDS_ROF=1
+CMD &gt;&gt;&gt; ./xmlchange ROOTPE_ROF=0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mapping_dirpath</span> <span class="o">=</span> <span class="s1">&#39;/glade/work/fengzhu/Projects/c4p_gen_mapping_domain&#39;</span>
+<span class="n">rof_dirc_dirpath</span> <span class="o">=</span> <span class="s1">&#39;/glade/work/fengzhu/Projects/c4p_gen_runoff_direction&#39;</span>
+<span class="k">case</span><span class="o">.</span><span class="n">xmlchange</span><span class="p">({</span>
+    <span class="s1">&#39;ATM_DOMAIN_PATH&#39;</span><span class="p">:</span> <span class="n">mapping_dirpath</span><span class="p">,</span>
+    <span class="s1">&#39;LND_DOMAIN_PATH&#39;</span><span class="p">:</span> <span class="n">mapping_dirpath</span><span class="p">,</span>
+    <span class="s1">&#39;OCN_DOMAIN_PATH&#39;</span><span class="p">:</span> <span class="n">mapping_dirpath</span><span class="p">,</span>
+    <span class="s1">&#39;ICE_DOMAIN_PATH&#39;</span><span class="p">:</span> <span class="n">mapping_dirpath</span><span class="p">,</span>
+    <span class="s1">&#39;ATM_DOMAIN_FILE&#39;</span><span class="p">:</span> <span class="s1">&#39;domain.lnd.ne16np4_gx1vMIO.230716.nc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LND_DOMAIN_FILE&#39;</span><span class="p">:</span> <span class="s1">&#39;domain.lnd.ne16np4_gx1vMIO.230716.nc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;OCN_DOMAIN_FILE&#39;</span><span class="p">:</span> <span class="s1">&#39;domain.ocn.gx1vMIO.230716.nc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ICE_DOMAIN_FILE&#39;</span><span class="p">:</span> <span class="s1">&#39;domain.ocn.gx1vMIO.230716.nc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ATM2OCN_FMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_ne16np4_TO_gx1vMIO_aave.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ATM2OCN_SMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_ne16np4_TO_gx1vMIO_blin.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ATM2OCN_VMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_ne16np4_TO_gx1vMIO_patc.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;OCN2ATM_FMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_gx1vMIO_TO_ne16np4_aave.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;OCN2ATM_SMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_gx1vMIO_TO_ne16np4_blin.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;LND2ROF_FMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_ne16np4_TO_r1_nomask_aave.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ROF2LND_FMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_r1_nomask_TO_ne16np4_aave.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ROF2OCN_FMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_r1_nomask_TO_gx1vMIO_aave.230716.nc&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ROF2OCN_RMAPNAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rof_dirc_dirpath</span><span class="p">,</span> <span class="s1">&#39;map_r1_nomask_to_gx1vMIO_nnsm_e1000r300.230716.nc&#39;</span><span class="p">),</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./xmlchange ATM_DOMAIN_PATH=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain
+CMD &gt;&gt;&gt; ./xmlchange LND_DOMAIN_PATH=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain
+CMD &gt;&gt;&gt; ./xmlchange OCN_DOMAIN_PATH=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain
+CMD &gt;&gt;&gt; ./xmlchange ICE_DOMAIN_PATH=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain
+CMD &gt;&gt;&gt; ./xmlchange ATM_DOMAIN_FILE=domain.lnd.ne16np4_gx1vMIO.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange LND_DOMAIN_FILE=domain.lnd.ne16np4_gx1vMIO.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange OCN_DOMAIN_FILE=domain.ocn.gx1vMIO.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ICE_DOMAIN_FILE=domain.ocn.gx1vMIO.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ATM2OCN_FMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_ne16np4_TO_gx1vMIO_aave.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ATM2OCN_SMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_ne16np4_TO_gx1vMIO_blin.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ATM2OCN_VMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_ne16np4_TO_gx1vMIO_patc.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange OCN2ATM_FMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_gx1vMIO_TO_ne16np4_aave.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange OCN2ATM_SMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_gx1vMIO_TO_ne16np4_blin.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange LND2ROF_FMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_ne16np4_TO_r1_nomask_aave.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ROF2LND_FMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_r1_nomask_TO_ne16np4_aave.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ROF2OCN_FMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_mapping_domain/map_r1_nomask_TO_gx1vMIO_aave.230716.nc
+CMD &gt;&gt;&gt; ./xmlchange ROF2OCN_RMAPNAME=/glade/work/fengzhu/Projects/c4p_gen_runoff_direction/map_r1_nomask_to_gx1vMIO_nnsm_e1000r300.230716.nc
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./case.setup
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/config/cesm/machines/Depends.intel -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+job is case.run USER_REQUESTED_WALLTIME None USER_REQUESTED_QUEUE None
+Creating batch scripts
+Writing case.run script from input template /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/config/cesm/machines/template.case.run
+Creating file .case.run
+Writing case.st_archive script from input template /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/config/cesm/machines/template.st_archive
+Creating file case.st_archive
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_mach_pes.xml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_batch.xml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles
+Creating user_nl_xxx files for components and cpl
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/drivers/mct/cime_config/user_nl_cpl -&gt; .
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cam//cime_config/user_nl_cam -&gt;
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/clm//cime_config/user_nl_clm -&gt;
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cice//cime_config/user_nl_cice -&gt;
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/pop//cime_config/user_nl_pop -&gt;
+copying /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/rtm//cime_config/user_nl_rtm -&gt;
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_mach_specific.xml already exists, delete to replace
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+If an old case build already exists, might want to run &#39;case.build --clean&#39; before building
+You can now run &#39;./preview_run&#39; to get more info on how your case will be run
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s1">&#39;user_nl_cam&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">bnd_topo    = &#39;/glade/work/pacosta/PaleoBC/acostar/Topo_boundary/MIOCENE/mmio&#39;</span>
+
+<span class="s1">co2vmr      = 1708.2e-6</span>
+<span class="s1">ch4vmr      = 597.0e-9</span>
+<span class="s1">n2ovmr      = 262.0e-9</span>
+<span class="s1">f11vmr      = 0.0</span>
+<span class="s1">f12vmr      = 0.0</span>
+
+<span class="s1">cldfrc_rhminl  = 0.8870D0</span>
+<span class="s1">micro_mg_dcs   = 525.D-6</span>
+<span class="s1">dust_emis_fact = 0.95D0</span>
+
+<span class="s1">! do not apply the lower-bounnd limiter on isotopic water vapor</span>
+<span class="s1">! because PHIS in the model is always smaller than this crit value</span>
+<span class="s1">wtrc_limiter_phis_crit = 100000.0</span>
+
+<span class="s1">!! high-frequency output turned off for LR runs</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s1">&#39;user_nl_pop&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">! namelists for wiso</span>
+<span class="s1">wiso_use_nml_surf_vals      = .false.</span>
+<span class="s1">wiso_comp_surf_avg_freq_opt = &#39;nmonth&#39;</span>
+<span class="s1">wiso_comp_surf_avg_freq     = 1</span>
+
+<span class="s1">overflows_on            = .false.</span>
+<span class="s1">overflows_interactive   = .false.</span>
+<span class="s1">horiz_grid_file         = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/grid.gx1vMIO.pop.da&#39;</span>
+<span class="s1">topography_file         = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/gridkmt.gx1vMIO.202.182.0.5.40.50_pop.da&#39;</span>
+<span class="s1">region_mask_file        = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/makeocn/region.ieeei4&#39;</span>
+<span class="s1">lat_aux_begin           = -90.0</span>
+<span class="s1">lat_aux_end             = 90.0</span>
+<span class="s1">lat_aux_grid_type       = &#39;user-specified&#39;</span>
+<span class="s1">n_lat_aux_grid          = 90</span>
+<span class="s1">moc_requested           = .true.</span>
+<span class="s1">n_heat_trans_requested  = .true.</span>
+<span class="s1">n_salt_trans_requested  = .true.</span>
+<span class="s1">n_transport_reg         = 1</span>
+<span class="s1">transport_reg2_names    = &#39;Eq Bay&#39;,&#39;Mid-ocean Ridge&#39;</span>
+<span class="s1">dt_count                = 23</span>
+<span class="s1">time_mix_freq           = 17</span>
+<span class="s1">lhoriz_varying_bckgrnd  = .false.</span>
+<span class="s1">ldiag_velocity          = .false.</span>
+<span class="s1">ltidal_mixing           = .false.</span>
+<span class="s1">bckgrnd_vdc1            = 0.524</span>
+<span class="s1">bckgrnd_vdc2            = 0.313</span>
+<span class="s1">sw_absorption_type      = &#39;jerlov&#39;</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s1">&#39;user_nl_clm&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">urban_hac   = &#39;OFF&#39;</span>
+<span class="s1">fsurdat     = &#39;/glade/work/pacosta/PaleoBC/acostar/MIO/Veg_MIOSASavanna/mksurfdata&#39;</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">preview_namelists</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./preview_namelists
+Creating component namelists
+  2023-07-16 22:04:09 atm
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cam//cime_config/buildnml
+     ...calling cam buildcpp to set build time options
+CAM namelist copy: file1 /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/atm_in file2 /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_in
+  2023-07-16 22:04:10 lnd
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/clm//cime_config/buildnml
+     ...calling clm buildcpp to set build time options
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING: CLM is starting up from a cold state
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  2023-07-16 22:04:11 ice
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cice//cime_config/buildnml
+     ...buildnml calling cice buildcpp to set build time options
+  2023-07-16 22:04:11 ocn
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/pop//cime_config/buildnml
+     ... buildnml: calling pop buildcpp to set build time options
+     POP build-namelist: ocn_grid is gx1v6
+POP build-namelist: ocn_tracer_modules are iage wiso
+  2023-07-16 22:04:24 rof
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/rtm//cime_config/buildnml
+  2023-07-16 22:04:24 glc
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/sglc/cime_config/buildnml
+  2023-07-16 22:04:24 wav
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/swav/cime_config/buildnml
+  2023-07-16 22:04:24 esp
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/sesp/cime_config/buildnml
+  2023-07-16 22:04:24 cpl
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/drivers/mct/cime_config/buildnml
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/drv_in -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs/drv_flds_in -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/seq_maps.rc -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/glc_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/ocn_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/esp_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/ice_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/wav_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/lnd_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/atm_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/rof_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/cpl_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+Finished creating component namelists
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/cpl_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ice_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ocn_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/glc_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/wav_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/lnd_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/esp_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/rof_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/drv_flds_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ice_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/drv_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/pop_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/lnd_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/rof_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/seq_maps.rc -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/chem_mech.in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/chem_mech.doc -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; qcmd -N test -q main -l select=1:ncpus=36:mpiprocs=36:mem=64GB -l walltime=06:00:00 -A UBRN0018 -- ./case.build
+Waiting on job launch; 1241745.desched1 with qsub arguments:
+    qsub  -l select=1:ncpus=36:mpiprocs=36:mem=64GB -A UBRN0018 -N test -q main@desched1 -l walltime=06:00:00
+
+Building case in directory /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001
+sharedlib_only is False
+model_only is False
+Generating component namelists as part of build
+Creating component namelists
+2023-07-16 22:08:38 atm
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cam//cime_config/buildnml
+...calling cam buildcpp to set build time options
+CAM namelist copy: file1 /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/atm_in file2 /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_in
+2023-07-16 22:08:39 lnd
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/clm//cime_config/buildnml
+...calling clm buildcpp to set build time options
+WARNING: CLM is starting up from a cold state
+2023-07-16 22:08:39 ice
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cice//cime_config/buildnml
+...buildnml calling cice buildcpp to set build time options
+2023-07-16 22:08:39 ocn
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/pop//cime_config/buildnml
+... buildnml: calling pop buildcpp to set build time options
+POP build-namelist: ocn_grid is gx1v6
+POP build-namelist: ocn_tracer_modules are iage wiso
+2023-07-16 22:08:46 rof
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/rtm//cime_config/buildnml
+2023-07-16 22:08:46 glc
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/sglc/cime_config/buildnml
+2023-07-16 22:08:46 wav
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/swav/cime_config/buildnml
+2023-07-16 22:08:46 esp
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/sesp/cime_config/buildnml
+2023-07-16 22:08:46 cpl
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/drivers/mct/cime_config/buildnml
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/drv_in -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs/drv_flds_in -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/seq_maps.rc -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/glc_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/ocn_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/esp_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/ice_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/wav_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/lnd_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/atm_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/rof_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/cpl_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+Finished creating component namelists
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/cpl_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ice_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ocn_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/glc_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/wav_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/lnd_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/esp_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/rof_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/drv_flds_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ice_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/drv_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/pop_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/lnd_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/rof_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/seq_maps.rc -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/chem_mech.in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/chem_mech.doc -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+Building gptl with output to file /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/gptl.bldlog.230716-220837
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/build_scripts/buildlib.gptl
+Building mct with output to file /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/mct.bldlog.230716-220837
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/build_scripts/buildlib.mct
+Building pio with output to file /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/pio.bldlog.230716-220837
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/build_scripts/buildlib.pio
+Building csm_share with output to file /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/csm_share.bldlog.230716-220837
+Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/build_scripts/buildlib.csm_share
+- Building clm library
+Building lnd with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lnd.bldlog.230716-220837
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/intel/mpich/nodebug/threads/mct/mct/noesmf/clm/obj/lnd_comp_esmf.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/intel/mpich/nodebug/threads/mct/mct/noesmf/include
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/intel/mpich/nodebug/threads/mct/mct/noesmf/clm/obj/lnd_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/intel/mpich/nodebug/threads/mct/mct/noesmf/include
+clm built in 0.524320 seconds
+- Building atm Library
+Building atm with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/atm.bldlog.230716-220837
+- Building ice Library
+Building ice with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/ice.bldlog.230716-220837
+- Building ocn Library
+Building ocn with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/ocn.bldlog.230716-220837
+- Building rof Library
+Building rof with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/rof.bldlog.230716-220837
+- Building glc Library
+Building glc with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/glc.bldlog.230716-220837
+- Building wav Library
+Building wav with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/wav.bldlog.230716-220837
+- Building esp Library
+Building esp with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/esp.bldlog.230716-220837
+sesp built in 0.475943 seconds
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/glc/obj/glc_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/wav/obj/wav_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+sglc built in 1.396647 seconds
+swav built in 1.391858 seconds
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/rof/obj/rof_comp_esmf.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/rof/obj/rof_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+rtm built in 8.993535 seconds
+Component ice build complete with 1 warnings
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/ice/obj/ice_comp_esmf.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/ice/obj/ice_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+cice built in 61.958744 seconds
+Component atm build complete with 12 warnings
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/atm/obj/atm_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/atm/obj/atm_comp_esmf.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+cam built in 64.563199 seconds
+Component ocn build complete with 6 warnings
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/ocn/obj/ocn_comp_esmf.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/ocn/obj/ocn_comp_mct.mod -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/lib/include
+pop built in 66.153647 seconds
+Building cesm with output to /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/cesm.bldlog.230716-220837
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/cesm.exe -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/bld/cesm.exe.230716-220837
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_build.xml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles
+Time spent not building: 9.653044 sec
+Time spent building: 90.213235 sec
+MODEL BUILD HAS FINISHED SUCCESSFULLY
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">case</span><span class="o">.</span><span class="n">xmlchange</span><span class="p">({</span>
+    <span class="s1">&#39;STOP_OPTION&#39;</span><span class="p">:</span> <span class="s1">&#39;nmonths&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;STOP_N&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;REST_N&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RESUBMIT&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JOB_QUEUE&#39;</span><span class="p">:</span> <span class="s1">&#39;main&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JOB_WALLCLOCK_TIME&#39;</span><span class="p">:</span> <span class="s1">&#39;12:00:00&#39;</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="k">case</span><span class="o">.</span><span class="n">submit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; ./xmlchange STOP_OPTION=nmonths
+CMD &gt;&gt;&gt; ./xmlchange STOP_N=1
+CMD &gt;&gt;&gt; ./xmlchange REST_N=1
+CMD &gt;&gt;&gt; ./xmlchange RESUBMIT=0
+CMD &gt;&gt;&gt; ./xmlchange JOB_QUEUE=main
+CMD &gt;&gt;&gt; ./xmlchange JOB_WALLCLOCK_TIME=12:00:00
+CMD &gt;&gt;&gt; ./case.submit
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+File /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles/env_batch.xml has been modified
+
+env_batch.xml appears to have changed, regenerating batch scripts
+manual edits to these file will be lost!
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  found difference in JOB_WALLCLOCK_TIME : case &#39;12:00:00&#39; locked &#39;4:00:00&#39;
+  found difference in USER_REQUESTED_WALLTIME : case &#39;12:00:00&#39; locked &#39;&#39;
+  found difference in USER_REQUESTED_QUEUE : case &#39;main&#39; locked &#39;&#39;
+Creating batch scripts
+Writing case.run script from input template /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/config/cesm/machines/template.case.run
+Creating file .case.run
+Writing case.st_archive script from input template /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/config/cesm/machines/template.st_archive
+Creating file case.st_archive
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_batch.xml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/env_batch.xml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/LockedFiles
+Creating component namelists
+  2023-07-16 22:10:27 atm
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cam//cime_config/buildnml
+CAM namelist copy: file1 /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/atm_in file2 /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_in
+  2023-07-16 22:10:27 lnd
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/clm//cime_config/buildnml
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING: CLM is starting up from a cold state
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  2023-07-16 22:10:28 ice
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/cice//cime_config/buildnml
+  2023-07-16 22:10:28 ocn
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/pop//cime_config/buildnml
+     POP build-namelist: ocn_grid is gx1v6
+POP build-namelist: ocn_tracer_modules are iage wiso
+  2023-07-16 22:10:40 rof
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/components/rtm//cime_config/buildnml
+  2023-07-16 22:10:40 glc
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/sglc/cime_config/buildnml
+  2023-07-16 22:10:40 wav
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/swav/cime_config/buildnml
+  2023-07-16 22:10:40 esp
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/components/stub_comps/sesp/cime_config/buildnml
+  2023-07-16 22:10:40 cpl
+   Calling /glade/u/home/fengzhu/CESM/iCESM1.3_iHESP_lowres_fzhu/cime/src/drivers/mct/cime_config/buildnml
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/drv_in -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs/drv_flds_in -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/seq_maps.rc -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/glc_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/ocn_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/esp_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/ice_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/wav_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/lnd_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/atm_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/rof_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/cplconf/cpl_modelio.nml -&gt; /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run
+Finished creating component namelists
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/cpl_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ice_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ocn_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/glc_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/wav_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/lnd_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/esp_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/rof_modelio.nml -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/atm_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/drv_flds_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/ice_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/drv_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/pop_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/lnd_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/rof_in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/seq_maps.rc -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/chem_mech.in -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+copying /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/Buildconf/camconf/chem_mech.doc -&gt; /glade/work/fengzhu/CESM_cases/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/CaseDocs
+Checking that inputdata is available as part of case submission
+Loading input file list: &#39;Buildconf/clm.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cpl.input_data_list&#39;
+Loading input file list: &#39;Buildconf/pop.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cice.input_data_list&#39;
+Loading input file list: &#39;Buildconf/mosart.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cam.input_data_list&#39;
+Using protocol wget with user anonymous and passwd user@example.edu
+Trying to download file: &#39;../inputdata_checksum.dat&#39; to path &#39;/glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/inputdata_checksum.dat.raw&#39; using WGET protocol.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Model clm no file specified for finidat
+Model clm missing file fsurdat = &#39;/glade/work/pacosta/PaleoBC/acostar/MIO/Veg_MIOSASavanna/mksurfdata&#39;
+Model pop missing file region_mask_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/makeocn/region.ieeei4&#39;
+Model pop missing file topography_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/gridkmt.gx1vMIO.202.182.0.5.40.50_pop.da&#39;
+Model pop missing file horiz_grid_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/grid.gx1vMIO.pop.da&#39;
+Model cam missing file bnd_topo = &#39;/glade/work/pacosta/PaleoBC/acostar/Topo_boundary/MIOCENE/mmio&#39;
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SUCCESS
+
+Using protocol ftp with user anonymous and passwd user@example.edu
+server address ftp.cgd.ucar.edu root path cesm/inputdata
+Trying to download file: &#39;../inputdata_checksum.dat&#39; to path &#39;/glade/derecho/scratch/fengzhu/CESM_output/b.e13.B1850C5.ne16_g16.icesm13_ihesp.Miocene.001/run/inputdata_checksum.dat.raw&#39; using FTP protocol.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Client protocol gftp not enabled
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using protocol svn with user  and passwd
+Checking server ftp://ftp.cgd.ucar.edu/cesm/inputdata with protocol wget
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Client protocol None not enabled
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using protocol wget with user anonymous and passwd user@example.edu
+Loading input file list: &#39;Buildconf/clm.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cpl.input_data_list&#39;
+Loading input file list: &#39;Buildconf/pop.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cice.input_data_list&#39;
+Loading input file list: &#39;Buildconf/mosart.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cam.input_data_list&#39;
+Checking server ftp://gridanon.cgd.ucar.edu:2811/cesm/inputdata/ with protocol gftp
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Model clm no file specified for finidat
+Model clm missing file fsurdat = &#39;/glade/work/pacosta/PaleoBC/acostar/MIO/Veg_MIOSASavanna/mksurfdata&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file region_mask_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/makeocn/region.ieeei4&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file topography_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/gridkmt.gx1vMIO.202.182.0.5.40.50_pop.da&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file horiz_grid_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/grid.gx1vMIO.pop.da&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model cam missing file bnd_topo = &#39;/glade/work/pacosta/PaleoBC/acostar/Topo_boundary/MIOCENE/mmio&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Client protocol gftp not enabled
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Checking server ftp.cgd.ucar.edu/cesm/inputdata with protocol ftp
+Using protocol ftp with user anonymous and passwd user@example.edu
+server address ftp.cgd.ucar.edu root path cesm/inputdata
+Loading input file list: &#39;Buildconf/clm.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cpl.input_data_list&#39;
+Loading input file list: &#39;Buildconf/pop.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cice.input_data_list&#39;
+Loading input file list: &#39;Buildconf/mosart.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cam.input_data_list&#39;
+Checking server https://svn-ccsm-inputdata.cgd.ucar.edu/trunk/inputdata with protocol svn
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Model clm no file specified for finidat
+Model clm missing file fsurdat = &#39;/glade/work/pacosta/PaleoBC/acostar/MIO/Veg_MIOSASavanna/mksurfdata&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file region_mask_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/makeocn/region.ieeei4&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file topography_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/gridkmt.gx1vMIO.202.182.0.5.40.50_pop.da&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file horiz_grid_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/grid.gx1vMIO.pop.da&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model cam missing file bnd_topo = &#39;/glade/work/pacosta/PaleoBC/acostar/Topo_boundary/MIOCENE/mmio&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using protocol svn with user  and passwd
+Loading input file list: &#39;Buildconf/clm.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cpl.input_data_list&#39;
+Loading input file list: &#39;Buildconf/pop.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cice.input_data_list&#39;
+Loading input file list: &#39;Buildconf/mosart.input_data_list&#39;
+Loading input file list: &#39;Buildconf/cam.input_data_list&#39;
+Checking server None with protocol None
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Model clm no file specified for finidat
+Model clm missing file fsurdat = &#39;/glade/work/pacosta/PaleoBC/acostar/MIO/Veg_MIOSASavanna/mksurfdata&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file region_mask_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/makeocn/region.ieeei4&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file topography_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/gridkmt.gx1vMIO.202.182.0.5.40.50_pop.da&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model pop missing file horiz_grid_file = &#39;/glade/work/pacosta/PaleoBC/heroldn/gx1vMIO/grid.gx1vMIO.pop.da&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Model cam missing file bnd_topo = &#39;/glade/work/pacosta/PaleoBC/acostar/Topo_boundary/MIOCENE/mmio&#39;
+    Cannot download file since it lives outside of the input_data_root &#39;/glade/p/cesmdata/inputdata&#39;
+Client protocol None not enabled
+ERROR: Could not find all inputdata on any server
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../ug-run.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Run the Simulations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../ug-api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
