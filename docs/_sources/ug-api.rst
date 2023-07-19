@@ -1,10 +1,16 @@
 API Reference
 =============
 
-PaleoCase
----------
+CESMCase
+----------
 
-.. autoclass:: c4p.PaleoCase.mapping
+.. autoclass:: c4p.CESMCase
+    :members:
+
+PaleoSetup
+----------
+
+.. autoclass:: c4p.PaleoSetup.mapping
     :members:
 
 Mapping

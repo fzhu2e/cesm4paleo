@@ -139,6 +139,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ug-installation.html">Installation</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="ug-setup.html">Boundary Condition Setup</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="notebooks/setup-gen_mapping_domain.html">Generate Mapping and Domain Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/setup-gen_runoff_direction.html">Generate the Runoff Direction</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="ug-run.html">Run the Simulations</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -340,7 +341,14 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleocase">PaleoCase</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cesmcase">CESMCase</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.CESMCase"><code class="docutils literal notranslate"><span class="pre">CESMCase</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleosetup">PaleoSetup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.PaleoSetup.mapping"><code class="docutils literal notranslate"><span class="pre">mapping</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping">Mapping</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.ocn2atm"><code class="docutils literal notranslate"><span class="pre">ocn2atm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.atm2rof"><code class="docutils literal notranslate"><span class="pre">atm2rof</span></code></a></li>
@@ -363,8 +371,21 @@ document.write(`
                   
   <section id="api-reference">
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h1>
-<section id="paleocase">
-<h2>PaleoCase<a class="headerlink" href="#paleocase" title="Permalink to this heading">#</a></h2>
+<section id="cesmcase">
+<h2>CESMCase<a class="headerlink" href="#cesmcase" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="c4p.CESMCase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">c4p.</span></span><span class="sig-name descname"><span class="pre">CESMCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codebase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_old</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#c4p.CESMCase" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="paleosetup">
+<h2>PaleoSetup<a class="headerlink" href="#paleosetup" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="c4p.PaleoSetup.mapping">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">c4p.PaleoSetup.</span></span><span class="sig-name descname"><span class="pre">mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atm_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ocn_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rof_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_cesm_maps_script</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_esmf_map_script</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_domain_exe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#c4p.PaleoSetup.mapping" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
 </section>
 <section id="mapping">
 <h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this heading">#</a></h2>
@@ -440,7 +461,14 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleocase">PaleoCase</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cesmcase">CESMCase</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.CESMCase"><code class="docutils literal notranslate"><span class="pre">CESMCase</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paleosetup">PaleoSetup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.PaleoSetup.mapping"><code class="docutils literal notranslate"><span class="pre">mapping</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapping">Mapping</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.ocn2atm"><code class="docutils literal notranslate"><span class="pre">ocn2atm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c4p.Mapping.atm2rof"><code class="docutils literal notranslate"><span class="pre">atm2rof</span></code></a></li>
