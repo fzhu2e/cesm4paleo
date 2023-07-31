@@ -18,13 +18,13 @@ class ROF:
         self.rof2ocn_exe = os.path.join(cwd, './src/cime_mapping/runoff_map_1deg') if rof2ocn_exe is None else rof2ocn_exe
 
         for k, v in self.__dict__.items():
-            utils.p_success(f'>>> Runoff.{k}: {v}')
+            utils.p_success(f'>>> ROF.{k}: {v}')
         
-    def prep_topo(self, topo_path, path_create_topo_ncl=os.path.join(cwd, './src/rof/create-topo_1x1deg.ncl')):
+    def prep_topo(self, path_topo, path_create_topo_ncl=os.path.join(cwd, './src/rof/create-topo_1x1deg.ncl')):
         # Step 19
         utils.p_header('>>> Prep topo file at proper resolution ...')
-        self.topo_path = topo_path
-        utils.p_success(f'>>> ROF.topo_path = "{topo_path}"')
+        self.topo_path = path_topo
+        utils.p_success(f'>>> ROF.topo_path = "{path_topo}"')
         fpath = utils.copy(path_create_topo_ncl)
         utils.replace_str(
             fpath,

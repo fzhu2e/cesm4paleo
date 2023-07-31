@@ -6,4 +6,5 @@ Boundary Condition Setup
 
     notebooks/setup-gen_mapping_domain
     notebooks/setup-gen_runoff_direction
+    notebooks/setup-ocean
 

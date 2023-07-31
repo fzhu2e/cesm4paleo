@@ -1,0 +1,919 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Ocean Setup &#8212; cesm4paleo  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/setup-ocean';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Run the Simulations" href="../ug-run.html" />
+    <link rel="prev" title="Generate the Runoff Direction" href="setup-gen_runoff_direction.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/NCAR-logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../_static/NCAR-logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../ug-installation.html">Installation</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../ug-setup.html">Boundary Condition Setup</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="setup-gen_mapping_domain.html">Generate Mapping and Domain Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup-gen_runoff_direction.html">Generate the Runoff Direction</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Ocean Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ug-run.html">Run the Simulations</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="run-Miocene_lowres.html">Run Miocene Low-resolution Simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ug-api.html">API Reference</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fzhu2e/cesm4paleo" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fzhu2e/cesm4paleo/edit/main/notebooks/setup-ocean.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fzhu2e/cesm4paleo/issues/new?title=Issue%20on%20page%20%2Fnotebooks/setup-ocean.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/notebooks/setup-ocean.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Ocean Setup</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="Ocean-Setup">
+<h1>Ocean Setup<a class="headerlink" href="#Ocean-Setup" title="Permalink to this heading">#</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">c4p</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c4p</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="o">!</span>hostname
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2023.7.19
+derecho2
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wk_dir</span> <span class="o">=</span> <span class="s1">&#39;/glade/work/fengzhu/Projects/c4p_ocn_setup&#39;</span>
+<span class="n">case</span> <span class="o">=</span> <span class="n">c4p</span><span class="o">.</span><span class="n">PaleoSetup</span><span class="p">(</span>
+    <span class="n">account</span><span class="o">=</span><span class="s1">&#39;UBRN0018&#39;</span><span class="p">,</span>
+    <span class="n">casename</span><span class="o">=</span><span class="s1">&#39;Miocene&#39;</span><span class="p">,</span>
+    <span class="n">work_dirpath</span><span class="o">=</span><span class="n">wk_dir</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; /glade/work/fengzhu/Projects/c4p_ocn_setup created
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; Current directory switched to: /glade/work/fengzhu/Projects/c4p_ocn_setup
+</span>
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">case_ocn</span> <span class="o">=</span> <span class="n">case</span><span class="o">.</span><span class="n">setup_ocn</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.casename: Miocene
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.account: UBRN0018
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.work_dirpath: /glade/work/fengzhu/Projects/c4p_ocn_setup
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.lmod_path: /glade/u/apps/derecho/23.06/spack/opt/spack/lmod/8.7.20/gcc/7.5.0/pdxb/lmod
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.esmfbin_path: /glade/u/apps/derecho/23.06/spack/opt/spack/esmf/8.4.2/cray-mpich/8.1.25/oneapi/2023.0.0/fslf/bin
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.netcdf_lib_path: /glade/u/apps/derecho/23.06/spack/opt/spack/netcdf/4.9.2/oneapi/2023.0.0/iijr/lib
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.netcdf_inc_path: /glade/u/apps/derecho/23.06/spack/opt/spack/netcdf/4.9.2/oneapi/2023.0.0/iijr/include
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.grids_dirpath: /glade/p/cesmdata/inputdata/share/scripgrids
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.path_create_ESMF_map_sh: /glade/u/home/fengzhu/Github/cesm4paleo/c4p/./src/rof/create_ESMF_map.sh
+</span><span class="ansi-green-intense-fg ansi-bold">&gt;&gt;&gt; OCN.configs: {}
+</span>
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">case_ocn</span><span class="o">.</span><span class="n">create_ocn_grid</span><span class="p">(</span>
+    <span class="n">path_topo</span><span class="o">=</span><span class="s1">&#39;/glade/work/jiangzhu/data/inputdata/miocene/miocene_topo_pollard_antscape_dolan_0.5x0.5.nc&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-cyan-intense-fg ansi-bold">&gt;&gt;&gt; Create ocean grid files ...
+</span>CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_ocn_setup/ns_dipole
+CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_ocn_setup/paleotopo
+CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_ocn_setup/grid_bin2nc
+CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_ocn_setup/mk_grid.csh
+CMD &gt;&gt;&gt; /glade/work/fengzhu/Projects/c4p_ocn_setup/mk_grid.csh
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+
+set echo
+
+
+
+
+
+
+
+
+set CASE = Miocene
+set CASE = Miocene
+set ITER = 1
+set ITER = 1
+set topopath = /glade/work/jiangzhu/data/inputdata/miocene
+set topopath = /glade/work/jiangzhu/data/inputdata/miocene
+set topofile = miocene_topo_pollard_antscape_dolan_0.5x0.5.nc
+set topofile = miocene_topo_pollard_antscape_dolan_0.5x0.5.nc
+set vrtgridpath = /glade/u/home/fengzhu/Github/cesm4paleo/c4p/./src/ocn
+set vrtgridpath = /glade/u/home/fengzhu/Github/cesm4paleo/c4p/./src/ocn
+set vrtgrid = gx1v6_vert_grid
+set vrtgrid = gx1v6_vert_grid
+set DATE = &#34;`date +%y%m%d`&#34;
+set DATE = `date +%y%m%d`
+date +%y%m%d
+
+if ( ( ! -e $topopath/$topofile ) ) then
+if ( ( ! -e /glade/work/jiangzhu/data/inputdata/miocene/miocene_topo_pollard_antscape_dolan_0.5x0.5.nc ) ) then
+endif
+endif
+if ( ( ! -e $vrtgridpath/$vrtgrid ) ) then
+if ( ( ! -e /glade/u/home/fengzhu/Github/cesm4paleo/c4p/./src/ocn/gx1v6_vert_grid ) ) then
+endif
+endif
+
+
+
+
+
+
+
+
+set lonnp = 50.
+set lonnp = 50.
+set latnp = 75.
+set latnp = 75.
+set lonsp = 50.
+set lonsp = 50.
+set latsp = -69.
+set latsp = -69.
+
+
+
+
+set nlatn = 205
+set nlatn = 205
+set nlats = 179
+set nlats = 179
+
+set nx = 320
+set nx = 320
+set nz = 60
+set nz = 60
+set dyeq = .26
+set dyeq = .26
+set dsig = 23.
+set dsig = 23.
+set jcon = 11
+set jcon = 11
+
+
+
+set popgrid = grid.$ITER.pop.da
+set popgrid = grid.1.pop.da
+set pltgrid = grid.$ITER.plot.da
+set pltgrid = grid.1.plot.da
+set cdfgrid = gridkmt.$ITER.nc
+set cdfgrid = gridkmt.1.nc
+set depgrid = h.$ITER.da
+set depgrid = h.1.da
+set kmtgrid = kmt.$ITER.da
+set kmtgrid = kmt.1.da
+set minz = 5.
+set minz = 5.
+set mink = 3
+set mink = 3
+@ ny = $nlatn + $nlats
+@ ny = 205 + 179
+
+
+set iocean = 50
+set iocean = 50
+set jocean = 60
+set jocean = 60
+
+
+
+
+
+
+
+cat &gt; ! input.$ITER.ns_dipole &lt;&lt; EOF
+cat
+
+cat &gt; ! input.$ITER.paleotopo &lt;&lt; EOF
+cat
+
+cat &gt; ! input.$ITER.grid_bin2nc &lt;&lt; EOF
+cat
+
+
+
+ln -s $topopath/$topofile .
+ln -s /glade/work/jiangzhu/data/inputdata/miocene/miocene_topo_pollard_antscape_dolan_0.5x0.5.nc .
+ln -s $vrtgridpath/$vrtgrid .
+ln -s /glade/u/home/fengzhu/Github/cesm4paleo/c4p/./src/ocn/gx1v6_vert_grid .
+
+
+
+
+
+./ns_dipole &lt; input.$ITER.ns_dipole &gt; ! output.$ITER.ns_dipole
+./ns_dipole
+./paleotopo &lt; input.$ITER.paleotopo &gt; ! output.$ITER.paleotopo
+./paleotopo
+./grid_bin2nc &lt; input.$ITER.grid_bin2nc &gt; ! output.$ITER.bin2nc
+./grid_bin2nc
+
+
+
+
+
+
+exit ( 0 )
+exit ( 0 )
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">case_ocn</span><span class="o">.</span><span class="n">create_scrip</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-cyan-intense-fg ansi-bold">&gt;&gt;&gt; Create SCRIP mapping file ...
+</span>CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_ocn_setup/mk_scrip.csh
+CMD &gt;&gt;&gt; chmod +x /glade/work/fengzhu/Projects/c4p_ocn_setup/myconvertPOPT
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load nco &amp;&amp; /glade/work/fengzhu/Projects/c4p_ocn_setup/mk_scrip.csh
+ enter grid nx, ny
+ enter grid_name:
+ grid_name:
+ Miocene
+
+ enter grid_file_in:
+ grid_file_in:
+ /glade/work/fengzhu/Projects/c4p_ocn_setup/grid.1.pop.da
+
+ enter grid_topo_in:
+ grid_file_in:
+ /glade/work/fengzhu/Projects/c4p_ocn_setup/kmt.1.da
+
+ enter grid_file_out:
+ grid_file_in:
+ gx1Miocene_230731.nc
+
+ first
+ second
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+
+set echo off
+
+
+set DATE = &#34;`date +%y%m%d`&#34;
+set DATE = `date +%y%m%d`
+date +%y%m%d
+
+set popgriddir = /glade/work/fengzhu/Projects/c4p_ocn_setup
+set popgriddir = /glade/work/fengzhu/Projects/c4p_ocn_setup
+
+set scripdir = /glade/work/fengzhu/Projects/c4p_ocn_setup
+set scripdir = /glade/work/fengzhu/Projects/c4p_ocn_setup
+
+
+set nx = 320
+set nx = 320
+set ny = 384
+set ny = 384
+
+
+
+set popgrid = grid.1.pop.da
+set popgrid = grid.1.pop.da
+set kmtgrid = kmt.1.da
+set kmtgrid = kmt.1.da
+
+set popgridfile = $popgriddir/$popgrid
+set popgridfile = /glade/work/fengzhu/Projects/c4p_ocn_setup/grid.1.pop.da
+set kmtgridfile = $popgriddir/$kmtgrid
+set kmtgridfile = /glade/work/fengzhu/Projects/c4p_ocn_setup/kmt.1.da
+
+
+
+
+set ocngridname = Miocene
+set ocngridname = Miocene
+
+set ocnres = gx1Miocene
+set ocnres = gx1Miocene
+
+
+
+
+set ocngridfile = ${ocnres}_$DATE.nc
+set ocngridfile = gx1Miocene_230731.nc
+
+
+
+
+
+cat &gt; ! input.scrip_grid &lt;&lt; EOF
+cat
+
+
+
+
+
+${scripdir}/myconvertPOPT &lt; input.scrip_grid
+/glade/work/fengzhu/Projects/c4p_ocn_setup/myconvertPOPT
+
+
+
+
+
+foreach i ( $ocngridfile )
+foreach i ( gx1Miocene_230731.nc )
+ncatted -O -h -a Created_by,global,a,c,&#34;`whoami` on `date`; using pop input gridfile: $popgrid&#34; $i
+whoami
+date
+ncatted -O -h -a Created_by,global,a,c,fengzhu on Mon 31 Jul 2023 11:20:43 AM MDT; using pop input gridfile: grid.1.pop.da gx1Miocene_230731.nc
+ncatted -O -h -a 1D_grid_indexing,global,a,c,&#34;if n is 1D index, i runs fast, j runs slow: n=(j-1)*fast_grid_dim+i&#34; $i
+ncatted -O -h -a 1D_grid_indexing,global,a,c,if n is 1D index, i runs fast, j runs slow: n=(j-1)*fast_grid_dim+i gx1Miocene_230731.nc
+end
+end
+
+
+
+
+
+
+exit ( 0 )
+exit ( 0 )
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">case_ocn</span><span class="o">.</span><span class="n">plot_reg_diag</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-cyan-intense-fg ansi-bold">&gt;&gt;&gt; Create regional diagnostic plots ...
+</span>CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl &#39;space=20&#39; &#39;type=&#34;reg&#34;&#39; &#39;expt=&#34;gx1Miocene&#34;&#39; &#39;plot_type=&#34;sp&#34;&#39; &#39;date=&#34;230731&#34;&#39; /glade/work/fengzhu/Projects/c4p_ocn_setup/plot_global_all.ncl
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl &#39;space=20&#39; &#39;type=&#34;reg&#34;&#39; &#39;expt=&#34;gx1Miocene&#34;&#39; &#39;plot_type=&#34;np&#34;&#39; &#39;date=&#34;230731&#34;&#39; /glade/work/fengzhu/Projects/c4p_ocn_setup/plot_global_all.ncl
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl &#39;space=20&#39; &#39;type=&#34;reg&#34;&#39; &#39;expt=&#34;gx1Miocene&#34;&#39; &#39;plot_type=&#34;q1&#34;&#39; &#39;date=&#34;230731&#34;&#39; /glade/work/fengzhu/Projects/c4p_ocn_setup/plot_global_all.ncl
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl &#39;space=20&#39; &#39;type=&#34;reg&#34;&#39; &#39;expt=&#34;gx1Miocene&#34;&#39; &#39;plot_type=&#34;q2&#34;&#39; &#39;date=&#34;230731&#34;&#39; /glade/work/fengzhu/Projects/c4p_ocn_setup/plot_global_all.ncl
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl &#39;space=20&#39; &#39;type=&#34;reg&#34;&#39; &#39;expt=&#34;gx1Miocene&#34;&#39; &#39;plot_type=&#34;q3&#34;&#39; &#39;date=&#34;230731&#34;&#39; /glade/work/fengzhu/Projects/c4p_ocn_setup/plot_global_all.ncl
+CMD &gt;&gt;&gt; source $LMOD_ROOT/lmod/init/zsh &amp;&amp; module load ncl &amp;&amp; ncl &#39;space=20&#39; &#39;type=&#34;reg&#34;&#39; &#39;expt=&#34;gx1Miocene&#34;&#39; &#39;plot_type=&#34;q4&#34;&#39; &#39;date=&#34;230731&#34;&#39; /glade/work/fengzhu/Projects/c4p_ocn_setup/plot_global_all.ncl
+CMD &gt;&gt;&gt; convert Grid_gx1Miocene_230731_reg_np.pdf Grid_gx1Miocene_230731_reg_np.pdf.png
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_setup-ocean_6_1.png" src="../_images/notebooks_setup-ocean_6_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; convert Grid_gx1Miocene_230731_reg_q1.pdf Grid_gx1Miocene_230731_reg_q1.pdf.png
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_setup-ocean_6_3.png" src="../_images/notebooks_setup-ocean_6_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; convert Grid_gx1Miocene_230731_reg_q2.pdf Grid_gx1Miocene_230731_reg_q2.pdf.png
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_setup-ocean_6_5.png" src="../_images/notebooks_setup-ocean_6_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; convert Grid_gx1Miocene_230731_reg_q3.pdf Grid_gx1Miocene_230731_reg_q3.pdf.png
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_setup-ocean_6_7.png" src="../_images/notebooks_setup-ocean_6_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; convert Grid_gx1Miocene_230731_reg_q4.pdf Grid_gx1Miocene_230731_reg_q4.pdf.png
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_setup-ocean_6_9.png" src="../_images/notebooks_setup-ocean_6_9.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CMD &gt;&gt;&gt; convert Grid_gx1Miocene_230731_reg_sp.pdf Grid_gx1Miocene_230731_reg_sp.pdf.png
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_setup-ocean_6_11.png" src="../_images/notebooks_setup-ocean_6_11.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="setup-gen_runoff_direction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Generate the Runoff Direction</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../ug-run.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Run the Simulations</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, Feng Zhu, Jiang Zhu, Sophia Macarewich, Bette Otto-Bliersner, Esther Brady, Chijun Sun.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
