@@ -9,7 +9,7 @@ from . import utils
 cwd = os.path.dirname(__file__)
 
 class OCN:
-    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, rof2ocn_exe=None, **kwargs):
+    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, **kwargs):
         for k, v in kwargs.items():
             self.__dict__[k] = v
 
@@ -121,3 +121,18 @@ class OCN:
         for path in fig_paths:
             utils.run_shell(f'convert {path} {path}.png')
             display(Image(f'{path}.png'))
+
+    def gen_region_mask_transports(self, iter=1,
+            path_mk_ocninput_csh=os.path.join(cwd, './src/ocn/mk_ocninput/mk_ocninput_template.csh'),
+            path_modregmsk_edit_f=os.path.join(cwd, './src/ocn/mk_ocninput/modregmsk_edit.f'),
+        ):
+        utils.p_header('>>> Generate region mask and ocean transports ...')
+        fpath_csh = utils.copy(path_mk_ocninput_csh, 'mk_ocninput.csh')
+        fpath_f = utils.copy(path_modregmsk_edit_f)
+        utils.replace_str(
+            fpath_csh,
+            {
+                '<casename>': self.casename,
+                '<iter>': iter,
+            },
+        )
