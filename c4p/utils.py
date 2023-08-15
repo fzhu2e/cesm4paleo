@@ -59,7 +59,7 @@ def copy(src, dst=None):
         dst = os.path.abspath(os.path.basename(src))
 
     dst = os.path.abspath(dst)
-    shutil.copyfile(src, dst)
+    shutil.copy(src, dst)
     return dst
 
 def exec_script(fpath, args=None, timeout=None, chmod_add_x=True):

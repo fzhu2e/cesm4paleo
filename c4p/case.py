@@ -105,3 +105,36 @@ class CESMCase:
 
     def write_file(self, fname, content=None, mode='w'):
         utils.write_file(fname=fname, content=content, mode=mode)
+
+    def set_paths(self, atm_domain, lnd_domain, ocn_domain, ice_domain,
+                  atm2ocn_fmap, atm2ocn_smap, atm2ocn_vmap,
+                  ocn2atm_fmap, ocn2atm_smap,
+                  lnd2rof_fmap,
+                  rof2lnd_fmap,
+                  rof2ocn_fmap, rof2ocn_rmap):
+        self.xmlchange({
+            'ATM_DOMAIN_PATH': os.path.dirname(atm_domain),
+            'LND_DOMAIN_PATH': os.path.dirname(lnd_domain),
+            'OCN_DOMAIN_PATH': os.path.dirname(ocn_domain),
+            'ICE_DOMAIN_PATH': os.path.dirname(ice_domain),
+            'ATM_DOMAIN_FILE': os.path.basename(atm_domain),
+            'LND_DOMAIN_FILE': os.path.basename(lnd_domain),
+            'OCN_DOMAIN_FILE': os.path.basename(ocn_domain),
+            'ICE_DOMAIN_FILE': os.path.basename(ice_domain),
+            'ATM2OCN_FMAPNAME': atm2ocn_fmap,
+            'ATM2OCN_SMAPNAME': atm2ocn_smap,
+            'ATM2OCN_VMAPNAME': atm2ocn_vmap,
+            'OCN2ATM_FMAPNAME': ocn2atm_fmap,
+            'OCN2ATM_SMAPNAME': ocn2atm_smap,
+            'LND2ROF_FMAPNAME': lnd2rof_fmap,
+            'ROF2LND_FMAPNAME': rof2lnd_fmap,
+            'ROF2OCN_FMAPNAME': rof2ocn_fmap,
+            'ROF2OCN_RMAPNAME': rof2ocn_rmap,
+        })
+
+    def add_mod(self, component, mod_path):
+        target_dir = os.path.join(self.case_dirpath, 'SourceMods', f'src.{component}')
+        utils.copy(mod_path, target_dir)
+        utils.p_success(f'>>> Copy {mod_path} to: {target_dir}')
+
+        

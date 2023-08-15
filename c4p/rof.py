@@ -117,9 +117,9 @@ class ROF:
         # Create xarray dataset
         ds = xr.Dataset()
 
-        ds['RTM_FLOW_DIRECTION'] = (['ni', 'nj'], rdir.reshape(im0, jm0))
-        ds['xc'] = (['ni', 'nj'], rtm_lon.reshape(im0, jm0))
-        ds['yc'] = (['ni', 'nj'], rtm_lat.reshape(im0, jm0))
+        ds['RTM_FLOW_DIRECTION'] = (['nj', 'ni'], rdir.reshape(jm0, im0))
+        ds['xc'] = (['nj', 'ni'], rtm_lon.reshape(jm0, im0))
+        ds['yc'] = (['nj', 'ni'], rtm_lat.reshape(jm0, im0))
 
         ds['RTM_FLOW_DIRECTION'].attrs['long_name'] = 'RTM flow direction'
         ds['RTM_FLOW_DIRECTION'].attrs['units'] = 'unitless'
