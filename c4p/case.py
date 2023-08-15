@@ -10,7 +10,7 @@ from .mapping import Mapping
 cwd = os.path.dirname(__file__)
 
 class PaleoSetup:
-    def __init__(self, casename=None, work_dirpath=None, account=None, lmod_path=None, esmfbin_path=None, netcdf_lib_path=None, netcdf_inc_path=None, clean_old=True):
+    def __init__(self, casename=None, work_dirpath=None, account=None, lmod_path=None, esmfbin_path=None, netcdf_lib_path=None, netcdf_inc_path=None, clean_old=False):
         self.casename = casename
         self.account = account
         self.work_dirpath = work_dirpath

@@ -217,3 +217,6 @@ class ROF:
         ''')
         utils.run_shell(f'chmod +x {fpath}')
         utils.qsub_script(fpath, name='gen_rmap', account=self.account)
+
+    def clean(self):
+        utils.run_shell(f'rm -rf fort.*_{self.casename} *.F90 *.ncl gen_rmap* Makefile *.sed *.zsh *.csh runoff_map* topo*')
