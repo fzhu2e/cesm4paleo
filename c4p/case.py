@@ -5,6 +5,7 @@ from datetime import date
 from . import utils
 from .rof import ROF
 from .ocn import OCN
+from .lnd import LND
 from .mapping import Mapping
 
 cwd = os.path.dirname(__file__)
@@ -42,6 +43,9 @@ class PaleoSetup:
 
     def setup_ocn(self):
         return OCN(**self.__dict__)
+
+    def setup_lnd(self):
+        return LND(**self.__dict__)
 
 class CESMCase: 
     def __init__(self,

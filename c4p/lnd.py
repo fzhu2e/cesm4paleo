@@ -23,3 +23,11 @@ class LND:
     def gen_surfdata(self):
         utils.p_header('>>> Generate land surface data ...')
         # TODO
+
+    def interpinic(self, template, input_field, exe_path=os.path.join(cwd, './src/interpinic/interpinic')):
+        utils.p_header('>>> Interpolate the input land surface data based on the given template ...')
+        fpath_exe = utils.copy(exe_path, 'interpinic')
+        fpath_template = utils.copy(template)
+        utils.exec_script(fpath_exe, args=f'-i {input_field} -o {fpath_template}')
+
+        
