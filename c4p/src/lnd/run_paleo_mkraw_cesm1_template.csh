@@ -1,6 +1,6 @@
 #!/bin/csh -f
-set echo
-set verbose
+# set echo
+# set verbose
 #----------------------- paleo_mkraw_cesm1.csh --------------------------------------
 #
 # all work is done in directory where script and code resides 

@@ -22,7 +22,7 @@ class ATM:
 
     def gen_topo(self, path_topo, path_mk_10min_topo_ncl=os.path.join(cwd, './src/atm/mk_10min_definesurf_input_paleo.ncl')):
         utils.p_header('>>> Create a 10min topographic file ...')
-        fpath_ncl = utils.copy(path_mk_10min_topo_ncl, 'mk_ocninput.csh')
+        fpath_ncl = utils.copy(path_mk_10min_topo_ncl, 'mk_ocninput.ncl')
         utils.replace_str(
             fpath_ncl,
             {
@@ -31,6 +31,7 @@ class ATM:
                 '<topo-bath_file>': os.path.basename(path_topo),
             },
         )
+        utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath_ncl}', timeout=3)
 
     def gen_boundary(self):
         utils.p_header('>>> Create boundary dataset for topography fields ...')

@@ -651,6 +651,9 @@ subroutine mksoilcol(ldomain, mapfname, datfname, ndiag, &
 
   nsoicol = maxval(soil_color_i)
   write(6,*)'nsoicol = ',nsoicol
+  if (nsoicol > 8 .and. nsoicol <= 20) then
+     nsoicol = 20
+  end if
 
   allocate(gast_i(0:nsoicol),gast_o(0:nsoicol),col(0:nsoicol))
 

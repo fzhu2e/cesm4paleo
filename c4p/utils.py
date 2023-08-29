@@ -59,6 +59,9 @@ def copy(src, dst=None):
         dst = os.path.abspath(os.path.basename(src))
 
     dst = os.path.abspath(dst)
+    if os.path.exists(dst):
+        os.remove(dst)
+
     shutil.copy(src, dst)
     return dst
 

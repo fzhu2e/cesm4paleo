@@ -20,11 +20,15 @@ class ROF:
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> ROF.{k}: {v}')
         
-    def prep_topo(self, path_topo, path_create_topo_ncl=os.path.join(cwd, './src/rof/create-topo_1x1deg.ncl')):
+    def prep_topo(self, path_topo, res='1x1', path_create_topo_ncl=None):
         # Step 19
         utils.p_header('>>> Prep topo file at proper resolution ...')
         self.topo_path = path_topo
-        utils.p_success(f'>>> ROF.topo_path = "{path_topo}"')
+        utils.p_success(f'>>> LND.topo_path = "{path_topo}"')
+
+        if path_create_topo_ncl is None:
+            path_create_topo_ncl = os.path.join(cwd, f'./src/rof/create-topo_{res}deg.ncl')
+
         fpath = utils.copy(path_create_topo_ncl)
         utils.replace_str(
             fpath,

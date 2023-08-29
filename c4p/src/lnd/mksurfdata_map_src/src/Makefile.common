@@ -30,7 +30,7 @@ RM = rm
 
 # Check for the netcdf library and include directories 
 ifeq ($(LIB_NETCDF),$(null))
-  LIB_NETCDF := /usr/local/lib
+  LIB_NETCDF := /usr/local/lib -lnetcdf -lnetcdff
 endif
 
 ifeq ($(INC_NETCDF),$(null))
@@ -248,7 +248,8 @@ ifeq ($(UNAMES),Linux)
   endif
   CPPDEF += -DLINUX -DFORTRANUNDERSCORE
   CFLAGS := $(CPPDEF)
-  LDFLAGS := $(shell $(LIB_NETCDF)/../bin/nf-config --flibs)
+ # LDFLAGS := $(shell $(LIB_NETCDF)/../bin/nf-config --flibs)
+  LDFLAGS := $(shell nf-config --flibs)
   FFLAGS =
 
   ifeq ($(FCTYP),pgf90)

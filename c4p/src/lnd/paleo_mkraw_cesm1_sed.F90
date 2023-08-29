@@ -1267,8 +1267,11 @@ subroutine create_mksrf_pft(veg,landmask,numpft,		  &
         pct_pft(i,j,5) = 80._r8       !broadleaf evergreen temperate tree
       elseif (veg(i,j).eq.28) then    !non-forest wetland
         pct_pft(i,j,0) = 100._r8      !is bare
-      elseif (veg(i,j) < 0 .or. veg(i,j) > 28) then
-        write(*,*) 'ERROR mapping veg to pct_pft: veg < 0 OR veg > 28',veg(i,j),i,j
+      elseif (veg(i,j).eq.29) then    !according to Nick Herold's new veg data
+        pct_pft(i,j,0) = 25._r8       !includes bare ground and
+        pct_pft(i,j,5) = 75._r8       !broadleaf evergreen temperate tree
+      elseif (veg(i,j) < 0 .or. veg(i,j) > 29) then
+        write(*,*) 'ERROR mapping veg to pct_pft: veg < 0 OR veg > 29',veg(i,j),i,j
       end if
     end do
   end do
@@ -1866,10 +1869,11 @@ subroutine create_mksrf_soicol(veg,landmask,			     &
 
   do j = 1,nlon
   do i = 1,nlat
-   if(landmask(j,i) == 1.) soil_color(j,i) = 10._r8   ! see Table 3.3. in CLM4 doc to choose your colr
+   soil_color(j,i) = 10._r8
+   !if(landmask(j,i) == 1.) soil_color(j,i) = 10._r8   ! see Table 3.3. in CLM4 doc to choose your colr
 						      ! http://www.cesm.ucar.edu/models/cesm1.0/clm/CLM4_Tech_Note.pdf
 						      ! or add code here to modify soil color by geography 
-   !! if(landmask(j,i) == 1.) soil_color(j,i) = 15._r8   ! used to be 4 for ccsm3
+   if(landmask(j,i) == 1.) soil_color(j,i) = 15._r8   ! used to be 4 for ccsm3
   enddo
   enddo
   print *, 'Soil Color sample at point (1,1)',soil_color(1,1)

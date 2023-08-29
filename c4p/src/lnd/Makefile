@@ -8,7 +8,7 @@
 #------------------------------------------------------------------------
 
 FC         = ifort -assume byterecl
-LIB_NETCDF = -L/glade/apps/opt/netcdf/4.2/intel/default/lib -lnetcdf
+LIB_NETCDF = -L/glade/apps/opt/netcdf/4.2/intel/default/lib -lnetcdf -lnetcdff
 INC_NETCDF = -I/glade/apps/opt/netcdf/4.2/intel/default/include
 
 TARGETS  = paleo_mkraw_cesm1

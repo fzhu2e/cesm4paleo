@@ -6,6 +6,7 @@ from . import utils
 from .rof import ROF
 from .ocn import OCN
 from .lnd import LND
+from .atm import ATM
 from .mapping import Mapping
 
 cwd = os.path.dirname(__file__)
@@ -46,6 +47,9 @@ class PaleoSetup:
 
     def setup_lnd(self):
         return LND(**self.__dict__)
+
+    def setup_atm(self):
+        return ATM(**self.__dict__)
 
 class CESMCase: 
     def __init__(self,
