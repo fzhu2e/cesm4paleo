@@ -32,51 +32,51 @@ class Mapping:
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> Mapping.{k}: {v}')
 
-    def ocn2atm(self):
+    def ocn2atm(self, queue='main'):
         utils.p_header(f'>>> Creating ocean<->atmosphere mapping files')
         utils.qsub_script(
             self.gen_cesm_maps_script,
             args=f'-fatm {self.atm_scrip} -natm {self.atm_grid_name} -focn {self.ocn_scrip} -nocn {self.ocn_grid_name} --nogridcheck',
-            name=self.job_name, account=self.account,
+            name=self.job_name, account=self.account, queue=queue,
         )
 
-    def rof2atm(self):
+    def rof2atm(self, queue='main'):
         utils.p_header(f'>>> Creating river->atmosphere(land) mapping files')
         utils.qsub_script(
             self.gen_esmf_map_script,
             args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.atm_scrip} -ndst {self.atm_grid_name} -map aave',
-            name=self.job_name, account=self.account,
+            name=self.job_name, account=self.account, queue=queue,
         )
     
-    def atm2rof(self):
+    def atm2rof(self, queue='main'):
         utils.p_header(f'>>> Creating atmosphere(land)->river mapping files')
         utils.qsub_script(
             self.gen_esmf_map_script,
             args=f'-fsrc {self.atm_scrip} -nsrc {self.atm_grid_name} -fdst {self.rof_scrip} -ndst {self.rof_grid_name} -map aave',
-            name=self.job_name, account=self.account,
+            name=self.job_name, account=self.account, queue=queue,
         )
         
-    def rof2ocn(self):
+    def rof2ocn(self, queue='main'):
         utils.p_header(f'>>> Creating river->ocean mapping files')
         utils.qsub_script(
             self.gen_esmf_map_script,
             args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.ocn_scrip} -ndst {self.ocn_grid_name} -map aave',
-            name=self.job_name, account=self.account,
+            name=self.job_name, account=self.account, queue=queue,
         )
 
-    def gen_mapping(self):
-        self.ocn2atm()
-        self.atm2rof()
-        self.rof2atm()
-        self.rof2ocn()
+    def gen_mapping(self, queue='main'):
+        self.ocn2atm(queue=queue)
+        self.atm2rof(queue=queue)
+        self.rof2atm(queue=queue)
+        self.rof2ocn(queue=queue)
 
-    def gen_domain(self):
+    def gen_domain(self, queue='main'):
         utils.p_header(f'>>> Creating ocean<->atmosphere domain files')
         date_today = date.today().strftime('%y%m%d')
         utils.qsub_script(
             self.gen_domain_exe,
             args=f'-m map_{self.ocn_grid_name}_TO_{self.atm_grid_name}_aave.{date_today}.nc -o {self.ocn_grid_name} -l {self.atm_grid_name}',
-            name=self.job_name, account=self.account,
+            name=self.job_name, account=self.account, queue=queue,
         )
 
     def clean(self):
