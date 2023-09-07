@@ -10,8 +10,8 @@ begin
 ; User defined
 ; =================
 
-case = "Miocene"
-fili = "/glade/work/jiangzhu/data/inputdata/miocene/miocene_topo_pollard_antscape_dolan_0.5x0.5.nc"
+case = "<casename>"
+fili = "<input_topo-bath_filename>"
 filo = "topo.1x1deg."+case+".nc"
 
 ; =================
