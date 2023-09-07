@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='c4p',  # required
-    version='2023.9.5',
+    version='2023.9.6',
     description='c4p: CESM for Paleo',
     long_description=long_description,
     long_description_content_type='text/x-rst',

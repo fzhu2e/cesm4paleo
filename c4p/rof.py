@@ -198,7 +198,7 @@ class ROF:
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def gen_rmap(self, ocn_grid, rof_grid_name):
+    def gen_rmap(self, ocn_grid, rof_grid_name, queue='main'):
         utils.p_header(f'>>> Creating ROF2OCN_RMAP file')
         ocn_grid_name, ocn_scrip  = list(ocn_grid.keys())[0], list(ocn_grid.values())[0]
         date_today = date.today().strftime('%y%m%d')
@@ -220,7 +220,7 @@ class ROF:
         /
         ''')
         utils.run_shell(f'chmod +x {fpath}')
-        utils.qsub_script(fpath, name='gen_rmap', account=self.account)
+        utils.qsub_script(fpath, name='gen_rmap', account=self.account, queue=queue)
 
     def clean(self):
         utils.run_shell(f'rm -rf fort.*_{self.casename} *.F90 *.ncl gen_rmap* Makefile *.sed *.zsh *.csh runoff_map* topo*')
