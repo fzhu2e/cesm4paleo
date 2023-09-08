@@ -39,12 +39,13 @@ class LND:
         )
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath}', timeout=3)
 
-    def gen_rawdata(self, lsm_path, topo_path=None, topo_vn='topo', lsm_vn='pft', org_vn='z_ORGANIC', queue='main',
+    def gen_rawdata(self, lsm_path, topo_path=None, topo_vn='topo', lsm_vn='pft', org_vn='z_ORGANIC',
             path_csh=os.path.join(cwd, './src/lnd/run_paleo_mkraw_cesm1_template.csh'),
             path_f90=os.path.join(cwd, './src/lnd/paleo_mkraw_cesm1_sed.F90'),
             path_makefile=os.path.join(cwd, './src/lnd/Makefile'),
             path_soi='/glade/p/cesmdata/cseg/inputdata/lnd/clm2/rawdata/mksrf_soitex.10level.c010119.nc',
             path_org=os.path.join(cwd, './src/lnd/mksrf_zon_organic.10level.nc'),
+            **qsub_kws,
             ):
         utils.p_header('>>> Generate land surface data ...')
         fpath_csh = utils.copy(path_csh, 'run_paleo_mkraw_cesm1.csh')
@@ -88,7 +89,7 @@ class LND:
         utils.run_shell(f'chmod +x {fpath_csh}')
         utils.qsub_script(
             fpath_csh,
-            name='paleo_mkraw_cesm1', account=self.account, queue=queue,
+            name='paleo_mkraw_cesm1', account=self.account, **qsub_kws,
         )
 
     def gen_scrip(self, lanwat_file, path_ncl=os.path.join(cwd, './src/lnd/mkscripgrid_template.ncl')):
@@ -103,7 +104,7 @@ class LND:
         )
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath_ncl}', timeout=3)
     
-    def gen_mapping(self, lnd_grid, atm_grid, path_sh=os.path.join(cwd, './src/cime_mapping/create_ESMF_map.sh'), queue='main'):
+    def gen_mapping(self, lnd_grid, atm_grid, path_sh=os.path.join(cwd, './src/cime_mapping/create_ESMF_map.sh'), **qsub_kws):
         utils.p_header('>>> Create the mapping file ...')
         fpath_sh = utils.copy(path_sh)
         utils.p_header(f'>>> Creating river->atmosphere(land) mapping files')
@@ -112,7 +113,7 @@ class LND:
         utils.qsub_script(
             fpath_sh,
             args=f'-fsrc {lnd_scrip} -nsrc {lnd_grid_name} -fdst {atm_scrip} -ndst {atm_grid_name} -map aave',
-            name='mapping_lnd2atm', account=self.account, queue=queue,
+            name='mapping_lnd2atm', account=self.account, **qsub_kws,
         )
     
     def gen_surfdata(self, mapping_file, out_res,
@@ -170,11 +171,6 @@ class LND:
             },
         )
         utils.exec_script(fpath_exe, args=f'< {fpath_namelist}')
-        # utils.qsub_script(
-        #     fpath_exe, args=f'< {fpath_namelist}',
-        #     name='gen_surfdata', account=self.account,
-        # )
-        
 
     def interpinic(self, template, input_field, exe_path=os.path.join(cwd, './src/interpinic/interpinic')):
         utils.p_header('>>> Interpolate the input land surface data based on the given template ...')

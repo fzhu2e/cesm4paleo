@@ -24,7 +24,7 @@ class ROF:
         # Step 19
         utils.p_header('>>> Prep topo file at proper resolution ...')
         self.topo_path = path_topo
-        utils.p_success(f'>>> LND.topo_path = "{path_topo}"')
+        utils.p_success(f'>>> ROF.topo_path = "{path_topo}"')
 
         if path_create_topo_ncl is None:
             path_create_topo_ncl = os.path.join(cwd, f'./src/rof/create-topo_{res}deg.ncl')
@@ -91,7 +91,7 @@ class ROF:
         utils.run_shell(f'chmod +x {fpath}')
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && {fpath}', timeout=3)
         display(
-            Image('./rdirc_miocene_topo_pollard_antscape_dolan_0.5x0.5.nc.png')
+            Image(f'./rdirc_{os.path.basename(self.topo_path)}.png')
         )
 
     def rof2nc(self, input=None, output=None, res='1x1',
@@ -198,7 +198,7 @@ class ROF:
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def gen_rmap(self, ocn_grid, rof_grid_name, queue='main'):
+    def gen_rmap(self, ocn_grid, rof_grid_name, **qsub_kws):
         utils.p_header(f'>>> Creating ROF2OCN_RMAP file')
         ocn_grid_name, ocn_scrip  = list(ocn_grid.keys())[0], list(ocn_grid.values())[0]
         date_today = date.today().strftime('%y%m%d')
@@ -220,7 +220,7 @@ class ROF:
         /
         ''')
         utils.run_shell(f'chmod +x {fpath}')
-        utils.qsub_script(fpath, name='gen_rmap', account=self.account, queue=queue)
+        utils.qsub_script(fpath, name='gen_rmap', account=self.account, **qsub_kws)
 
     def clean(self):
         utils.run_shell(f'rm -rf fort.*_{self.casename} *.F90 *.ncl gen_rmap* Makefile *.sed *.zsh *.csh runoff_map* topo*')
