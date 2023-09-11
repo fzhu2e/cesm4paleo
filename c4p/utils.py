@@ -1,4 +1,4 @@
-import os
+import os, sh
 import shutil
 import subprocess
 import colorama as ca
@@ -56,13 +56,10 @@ def svn_export(url, fpath=None):
 
 def copy(src, dst=None):
     if dst is None:
-        dst = os.path.abspath(os.path.basename(src))
+        dst = os.path.basename(src)
 
     dst = os.path.abspath(dst)
-    if os.path.exists(dst):
-        os.remove(dst)
-
-    shutil.copy(src, dst)
+    sh.cp(src, dst)
     return dst
 
 def exec_script(fpath, args=None, timeout=None, chmod_add_x=True):
