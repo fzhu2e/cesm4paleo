@@ -17,7 +17,7 @@ cc -o makdep $TOOLDIR/makdep.c
 
 echo $SRCDIR  >! Filepath
 
-gmake VPFILE=Filepath THREAD=TRUE -f $SRCDIR/Makefile MACFILE=$SRCDIR/Macros.cheyenne || exit -1
+gmake VPFILE=Filepath THREAD=TRUE -f $SRCDIR/Makefile MACFILE=$SRCDIR/Macros.derecho || exit -1
 
 cd ..
 rm              runoff_map

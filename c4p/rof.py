@@ -9,13 +9,12 @@ from . import utils
 cwd = os.path.dirname(__file__)
 
 class ROF:
-    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, rof2ocn_exe=None, **kwargs):
+    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, **kwargs):
         for k, v in kwargs.items():
             self.__dict__[k] = v
 
         self.grids_dirpath='/glade/p/cesmdata/inputdata/share/scripgrids' if grids_dirpath is None else grids_dirpath
         self.path_create_ESMF_map_sh=os.path.join(cwd, './src/rof/create_ESMF_map.sh') if path_create_ESMF_map_sh is None else path_create_ESMF_map_sh
-        self.rof2ocn_exe = os.path.join(cwd, './src/cime_mapping/runoff_map_1deg') if rof2ocn_exe is None else rof2ocn_exe
 
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> ROF.{k}: {v}')
@@ -198,11 +197,12 @@ class ROF:
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def gen_rmap(self, ocn_grid, rof_grid_name, **qsub_kws):
+    def gen_rmap(self, ocn_grid, rof_grid_name, res='1deg', **qsub_kws):
+        rof2ocn_exe = os.path.join(cwd, f'./src/rof/runoff_map_{res}')
         utils.p_header(f'>>> Creating ROF2OCN_RMAP file')
         ocn_grid_name, ocn_scrip  = list(ocn_grid.keys())[0], list(ocn_grid.values())[0]
         date_today = date.today().strftime('%y%m%d')
-        fpath = utils.copy(self.rof2ocn_exe)
+        fpath = utils.copy(rof2ocn_exe)
         utils.write_file(f'runoff_map.nml', f'''
         &input_nml
          gridtype     = 'rtm'
@@ -220,7 +220,7 @@ class ROF:
         /
         ''')
         utils.run_shell(f'chmod +x {fpath}')
-        utils.qsub_script(fpath, name='gen_rmap', account=self.account, **qsub_kws)
+        utils.qsub_script(f'{fpath} < runoff_map.nml', name='gen_rmap', account=self.account, **qsub_kws)
 
     def clean(self):
         utils.run_shell(f'rm -rf fort.*_{self.casename} *.F90 *.ncl gen_rmap* Makefile *.sed *.zsh *.csh runoff_map* topo*')

@@ -389,12 +389,12 @@ SUBROUTINE map_gridRead(map, rfilename, ofilename, gridtype, lmake_rSCRIP)
 
    if (trim(gridtype) == "rtm") then
       !-------------------------------------------------------------------------
-      write(*,F00) "read source domain info -- hardwired for 1 degree clm/rtm rdirc ascii file"
+      write(*,F00) "read source domain info -- hardwired for 1/2 degree clm/rtm rdirc ascii file"
       !-------------------------------------------------------------------------
 
       grid_rank = 2
-      map%ni_a = 360
-      map%nj_a = 180
+      map%ni_a = 720
+      map%nj_a = 360
       map%nv_a = 4
       map%n_a  = map%ni_a * map%nj_a
       map%dims_a(1) = map%ni_a
@@ -416,17 +416,17 @@ SUBROUTINE map_gridRead(map, rfilename, ofilename, gridtype, lmake_rSCRIP)
          map%xc_a(  n) = lon
          map%yc_a(  n) = lat
 
-         map%xv_a(1,n) = lon - 0.5
-         map%xv_a(2,n) = lon + 0.5
-         map%xv_a(3,n) = lon + 0.5
-         map%xv_a(4,n) = lon - 0.5
+         map%xv_a(1,n) = lon - 0.25
+         map%xv_a(2,n) = lon + 0.25
+         map%xv_a(3,n) = lon + 0.25
+         map%xv_a(4,n) = lon - 0.25
 
-         map%yv_a(1,n) = lat - 0.5
-         map%yv_a(2,n) = lat - 0.5
-         map%yv_a(3,n) = lat + 0.5
-         map%yv_a(4,n) = lat + 0.5
+         map%yv_a(1,n) = lat - 0.25
+         map%yv_a(2,n) = lat - 0.25
+         map%yv_a(3,n) = lat + 0.25
+         map%yv_a(4,n) = lat + 0.25
 
-         map%area_a(n) = 1.0 * 1.0 * cos(lat*DEGtoRAD) * DEGtoRAD * DEGtoRAD
+         map%area_a(n) = 0.5 * 0.5 * cos(lat*DEGtoRAD) * DEGtoRAD * DEGtoRAD
 
          if (abs(rdirc) < 0.5) then
             map%mask_a(n) = 1
@@ -1548,8 +1548,9 @@ SUBROUTINE map_write(map, filename)
    str   = 'fraction of domain intersection (input)'
    rcode = nf_put_att_text(fid,vid,"long_name",len_trim(str),str)
 
-   rcode = nf_inq_dimid(fid,'src_grid_rank' , did   )
-   rcode = nf_def_var  (fid,'src_grid_dims',NF_INT ,1,did,vid)
+   !causes problems with cesm1.2
+!   rcode = nf_inq_dimid(fid,'src_grid_rank' , did   )
+!   rcode = nf_def_var  (fid,'src_grid_dims',NF_INT ,1,did,vid)
 
    !-----------------------------------------------------------------
    ! define data -- coordinates, output grid
