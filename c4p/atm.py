@@ -9,12 +9,12 @@ from . import utils
 cwd = os.path.dirname(__file__)
 
 class ATM:
-    def __init__(self, grids_dirpath=None, path_create_ESMF_map_sh=None, **kwargs):
+    def __init__(self, grids_dirpath=None, gen_esmf_map_script=None, **kwargs):
         for k, v in kwargs.items():
             self.__dict__[k] = v
 
         self.grids_dirpath='/glade/p/cesmdata/inputdata/share/scripgrids' if grids_dirpath is None else grids_dirpath
-        self.path_create_ESMF_map_sh=os.path.join(cwd, './src/rof/create_ESMF_map.sh') if path_create_ESMF_map_sh is None else path_create_ESMF_map_sh
+        self.gen_esmf_map_script=os.path.join(cwd, './src/rof/create_ESMF_map.sh') if gen_esmf_map_script is None else gen_esmf_map_script
         self.configs = {}
 
         for k, v in self.__dict__.items():
@@ -32,6 +32,19 @@ class ATM:
             },
         )
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath_ncl}', timeout=3)
+
+    def regrid_topo(self, src_grid, dst_grid, src_topo, dst_topo):
+        src_grid_name, src_scrip  = list(src_grid.keys())[0], list(src_grid.values())[0]
+        dst_grid_name, dst_scrip  = list(dst_grid.keys())[0], list(dst_grid.values())[0]
+        utils.p_header(f'>>> Generate mapping from {src_grid_name} to {dst_grid_name} ...')
+        utils.exec_script(
+            self.gen_esmf_map_script,
+            args=f'-fsrc {src_scrip} -nsrc {src_grid_name} -fdst {dst_scrip} -ndst {dst_grid_name} -map blin',
+        )
+        meta_date=date.today().strftime('%y%m%d')
+        utils.p_header(f'>>> Interpolate data from {src_grid_name} to {dst_grid_name} ...')
+        utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load nco && ncremap -t 1 -m ./map_{src_grid_name}_TO_{dst_grid_name}_blin.{meta_date}.nc {src_topo} {dst_topo}')
+        
 
     def gen_boundary(self):
         utils.p_header('>>> Create boundary dataset for topography fields ...')

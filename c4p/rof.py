@@ -70,6 +70,7 @@ class ROF:
                 'INC_NETCDF = -I/glade/apps/opt/netcdf/4.2/intel/default/include': f'INC_NETCDF = -I{self.netcdf_inc_path}',
             },
         )
+        utils.run_shell(f'chmod +x {fpath_new}')
         utils.exec_script(fpath_new)
 
     def plot_rof(self,
@@ -197,7 +198,8 @@ class ROF:
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def gen_rmap(self, ocn_grid, rof_grid_name, res='1deg', **qsub_kws):
+    def gen_rmap(self, ocn_grid, rof_grid_name, res='1deg', qsub=True, rdirc_ascii=None, **qsub_kws):
+        rdirc_ascii = f'fort.13_{self.casename}' if rdirc_ascii is None else rdirc_ascii
         rof2ocn_exe = os.path.join(cwd, f'./src/rof/runoff_map_{res}')
         utils.p_header(f'>>> Creating ROF2OCN_RMAP file')
         ocn_grid_name, ocn_scrip  = list(ocn_grid.keys())[0], list(ocn_grid.values())[0]
@@ -206,12 +208,12 @@ class ROF:
         utils.write_file(f'runoff_map.nml', f'''
         &input_nml
          gridtype     = 'rtm'
-         file_roff    = 'fort.13_{self.casename}'
+         file_roff    = '{rdirc_ascii}'
          file_ocn     = '{ocn_scrip}'
          file_nn      = 'map_{rof_grid_name}_to_{ocn_grid_name}_nn.{date_today}.nc'
          file_smooth  = 'map_{rof_grid_name}_to_{ocn_grid_name}_sm_e1000r300.{date_today}.nc'
          file_new     = 'map_{rof_grid_name}_to_{ocn_grid_name}_nnsm_e1000r300.{date_today}.nc'
-         title        = 'runoff map: {rof_grid_name} -> ${ocn_grid_name}, nearest neighbor and smoothed'
+         title        = 'runoff map: {rof_grid_name} -> {ocn_grid_name}, nearest neighbor and smoothed'
          eFold        = 1000000.0
          rMax         =  300000.0
          step1 = .true.
@@ -220,7 +222,10 @@ class ROF:
         /
         ''')
         utils.run_shell(f'chmod +x {fpath}')
-        utils.qsub_script(f'{fpath} < runoff_map.nml', name='gen_rmap', account=self.account, **qsub_kws)
+        if qsub:
+            utils.qsub_script(f'{fpath} < runoff_map.nml', name='gen_rmap', account=self.account, **qsub_kws)
+        else:
+            utils.exec_script(f'{fpath} < runoff_map.nml')
 
     def clean(self):
         utils.run_shell(f'rm -rf fort.*_{self.casename} *.F90 *.ncl gen_rmap* Makefile *.sed *.zsh *.csh runoff_map* topo*')

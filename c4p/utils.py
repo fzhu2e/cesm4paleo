@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import colorama as ca
 from tqdm import tqdm
+import platform
 
 
 def p_header(text):
@@ -62,7 +63,7 @@ def copy(src, dst=None):
     sh.cp(src, dst)
     return dst
 
-def exec_script(fpath, args=None, timeout=None, chmod_add_x=True):
+def exec_script(fpath, args=None, timeout=None, chmod_add_x=False):
     if chmod_add_x:
         run_shell(f'chmod +x {fpath}')
 
@@ -73,7 +74,8 @@ def exec_script(fpath, args=None, timeout=None, chmod_add_x=True):
 
     run_shell(cmd, timeout=timeout)
 
-def make_pbs(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+def make_pbs(fpath, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+
     if account is None:
         raise ValueError('account must be specified')
 
@@ -83,8 +85,17 @@ def make_pbs(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mp
         cmd = f'{fpath} {args}'
 
     fname = f'pbs_{name}.zsh'
-    with open(fname, 'w') as f:
-        f.write(f'''#!/bin/zsh
+
+    hostname = platform.node()
+    if hostname[:7] == 'derecho':
+        if queue is None: queue = 'main'
+    elif hostname[:8] == 'cheyenne':
+        if queue is None: queue = 'regular'
+    elif hostname[:6] == 'casper':
+        if queue is None: queue = 'regular'
+
+        with open(fname, 'w') as f:
+            f.write(f'''#!/bin/zsh
 #PBS -N {name}
 #PBS -q {queue}
 #PBS -l select={select}:ncpus={ncpus}:mpiprocs={mpiprocs}:mem={mem}GB
@@ -92,18 +103,24 @@ def make_pbs(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mp
 #PBS -A {account}
 
 {cmd}
-                ''')
+                    ''')
 
     p_success(f'>>> {fname} created')
 
-def qsub_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+def qsub_script(fpath, args=None, name='test', queue=None, job_priority=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False):
+    if chmod_add_x:
+        run_shell(f'chmod +x {fpath}')
+
     if account is None:
         raise ValueError('account must be specified')
 
-    make_pbs(fpath, args=args, name=name, queue=queue, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
+    make_pbs(fpath, args=args, name=name, queue=queue, job_priority=job_priority, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
     run_shell(f'qsub pbs_{name}.zsh')
     
-def qcmd_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, **env_vars):
+def qcmd_script(fpath, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False, **env_vars):
+    if chmod_add_x:
+        run_shell(f'chmod +x {fpath}')
+
     if account is None:
         raise ValueError('account must be specified')
 
@@ -116,10 +133,16 @@ def qcmd_script(fpath, args=None, name='test', queue='main', select=1, ncpus=36,
     else:
         cmd = f'{fpath} {args}'
 
+    hostname = platform.node()
+    if hostname[:7] == 'derecho':
+        if queue is None: queue = 'main'
+    elif hostname[:8] == 'cheyenne':
+        if queue is None: queue = 'regular'
+
     l1 = f'select={select}:ncpus={ncpus}:mpiprocs={mpiprocs}:mem={mem}GB'
     l2 = f'walltime={walltime}'
 
-    run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2} -A {account} -- {cmd}')
+    run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2}  -A {account} -- {cmd}')
 
 def write_file(fname, content=None, mode='w'):
     if content is None:

@@ -229,6 +229,9 @@ if [ $MACH == "UNSET" ]; then
     de* )
       MACH="derecho"
     ;;
+    ca* )
+      MACH="casper"
+    ;;
     *)
       echo "Can not determine machine name from hostname '$hostname'"
       exit 1
@@ -301,6 +304,7 @@ fi
 case $MACH in
   ## cheyenne
   "cheyenne" )
+    module list > /dev/null 2>&1 || source $LMOD_ROOT/lmod/init/zsh
     module purge
     module load intel/17.0.1 esmf_libs/7.0.0
     if [ "$serial" == "TRUE" ]; then
@@ -322,6 +326,15 @@ case $MACH in
     fi
     # need to load module to access ncatted
     module load nco
+  ;;
+  ## casper
+  "casper" )
+    module list > /dev/null 2>&1 || source $LMOD_ROOT/lmod/init/zsh
+    module purge
+    module load intel/19.1.1 esmf_libs/8.0.0
+    module load esmf-8.0.0-ncdfio-mpi-g
+    module load nco
+    MPIEXEC="mpiexec -np 36"
   ;;
 ## geyser, caldera, or pronghorn
   "dav" )
@@ -345,10 +358,11 @@ case $MACH in
     module --force purge
     module load ncarenv/23.06
     module load intel-oneapi/2023.0.0
-    module load intel-mpi/2021.8.0
-    module load esmf/8.4.2
+    module load cray-mpich/8.1.25
+    module load esmf/8.5.0
     module load nco
-    MPIEXEC=""
+    MPIEXEC="mpirun -np 36"
+
   ;;
   *)
     echo "Machine $MACH NOT recognized"

@@ -34,6 +34,6 @@
  mksrf_furban   = './<mksrf_urban_file>'
  fsurdat        = 'surfdata_<out_res>_<casename>_c<date>.nc'
  fsurlog        = 'surfdata_<out_res>_<casename>_c<date>.log'     
- mksrf_fdynuse  = 'pftdyn_hist_PETM.txt'
+ mksrf_fdynuse  = 'pftdyn_hist_<casename>.txt'
  fdyndat        = 'surfdata.pftdyn_<out_res>_<casename>_c<date>.nc'
 /

@@ -129,9 +129,10 @@ class LND:
                    mksrf_vocef_file=None,
                    mksrf_topo_file=None,
                    mksrf_urban_file=None,
-                   path_exe=os.path.join(cwd, './src/lnd/mksurfdata_map_src/mksurfdata_map'),
+                   path_exe=None,
                    path_namelist=os.path.join(cwd, './src/lnd/mksurfdata_map.namelist.paleo')):
         utils.p_header('>>> Complete the land surface dataset ...')
+        path_exe=os.path.join(cwd, f'./src/lnd/mksurfdata_map_src/mksurfdata_map_{self.hostname}') if path_exe is None else path_exe
         fpath_exe = utils.copy(path_exe)
         utils.run_shell(f'chmod +x {fpath_exe}')
         fpath_namelist = utils.copy(path_namelist)
@@ -178,5 +179,5 @@ class LND:
         utils.exec_script(fpath_exe, args=f'-i {input_field} -o {template}')
 
     def clean(self):
-        utils.run_shell(f'rm -rf *paleo_mkraw* Makefile pathnames.sed mksrf_org.nc mksrf_soi.nc core mkscripgrid.ncl')
+        utils.run_shell(f'rm -rf PET*.Log *paleo_mkraw* Makefile pathnames.sed mksrf_org.nc mksrf_soi.nc core mkscripgrid.ncl')
         

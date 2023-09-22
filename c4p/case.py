@@ -1,6 +1,7 @@
 import os
 import shutil
 from datetime import date
+import platform
 
 from . import utils
 from .rof import ROF
@@ -12,14 +13,32 @@ from .mapping import Mapping
 cwd = os.path.dirname(__file__)
 
 class PaleoSetup:
-    def __init__(self, casename=None, work_dirpath=None, account=None, lmod_path=None, esmfbin_path=None, netcdf_lib_path=None, netcdf_inc_path=None, clean_old=False):
+    def __init__(self, casename=None, work_dirpath=None, account=None, netcdf_lib_path=None, netcdf_inc_path=None, clean_old=False):
         self.casename = casename
         self.account = account
         self.work_dirpath = work_dirpath
-        self.lmod_path = '/glade/u/apps/derecho/23.06/spack/opt/spack/lmod/8.7.20/gcc/7.5.0/pdxb/lmod' if lmod_path is None else lmod_path
-        self.esmfbin_path = '/glade/u/apps/derecho/23.06/spack/opt/spack/esmf/8.4.2/cray-mpich/8.1.25/oneapi/2023.0.0/fslf/bin' if esmfbin_path is None else esmfbin_path
-        self.netcdf_lib_path = '/glade/u/apps/derecho/23.06/spack/opt/spack/netcdf/4.9.2/oneapi/2023.0.0/iijr/lib' if netcdf_lib_path is None else netcdf_lib_path
-        self.netcdf_inc_path = '/glade/u/apps/derecho/23.06/spack/opt/spack/netcdf/4.9.2/oneapi/2023.0.0/iijr/include' if netcdf_inc_path is None else netcdf_inc_path
+
+        hostname = platform.node()
+        if hostname[:7] == 'derecho':
+            self.hostname = 'derecho'
+        elif hostname[:8] == 'cheyenne':
+            self.hostname = 'cheyenne'
+        elif hostname[:6] == 'casper':
+            self.hostname = 'casper'
+        else:
+            utils.p_warning(f'Unknown hostname: {hostname}')
+
+        if netcdf_lib_path is None:
+            if self.hostname == 'derecho':
+                self.netcdf_lib_path = '/glade/u/apps/derecho/23.06/spack/opt/spack/netcdf/4.9.2/oneapi/2023.0.0/iijr/lib'
+            elif self.hostname == 'cheyenne':
+                self.netcdf_lib_path = '/glade/u/apps/ch/opt/netcdf/4.8.1/intel/19.1.1/lib'
+
+        if netcdf_inc_path is None:
+            if self.hostname == 'derecho':
+                self.netcdf_inc_path = '/glade/u/apps/derecho/23.06/spack/opt/spack/netcdf/4.9.2/oneapi/2023.0.0/iijr/include'
+            elif self.hostname == 'cheyenne':
+                self.netcdf_inc_path = '/glade/u/apps/ch/opt/netcdf/4.8.1/intel/19.1.1/include'
 
         if clean_old:
             shutil.rmtree(work_dirpath) if os.path.exists(work_dirpath) else None
