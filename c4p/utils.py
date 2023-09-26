@@ -1,9 +1,13 @@
+import re
 import os, sh
 import shutil
 import subprocess
 import colorama as ca
 from tqdm import tqdm
 import platform
+import pandas as pd
+import glob
+from xml.etree import ElementTree as et
 
 
 def p_header(text):
@@ -151,13 +155,41 @@ def write_file(fname, content=None, mode='w'):
     with open(fname, mode) as f:
         f.write(f'''{content}''')
 
-class PDF(object):
-  def __init__(self, pdf, size=(200,200)):
-    self.pdf = pdf
-    self.size = size
 
-  def _repr_html_(self):
-    return '<iframe src={0} width={1[0]} height={1[1]}></iframe>'.format(self.pdf, self.size)
+def merge_summaries(paths, save_path=None):
+    dfs = []
+    for path in paths:
+        dfs.append(pd.read_csv(path, index_col=0))
 
-  def _repr_latex_(self):
-    return r'\includegraphics[width=1.0\textwidth]{{{0}}}'.format(self.pdf)
+    df = pd.concat(dfs, axis=1)
+
+    if save_path is not None:
+        df.to_csv(save_path)
+        p_success(f'>>> Summary report saved to: {os.path.abspath(save_path)}')
+
+    return df
+
+def wildcard_paths(dirpath, pattern):
+    paths = sorted(glob.glob(os.path.join(dirpath, pattern)))
+    return paths
+
+def parse_xml(fpath, key):
+    tree = et.parse(fpath)
+    root = tree.getroot()
+    d = {}
+    for item in root.iter('entry'):
+        if item.attrib['id'] == key:
+            d[key] = item.attrib['value']
+
+    return d
+
+def parse_nml(fpath, key):
+    d = {}
+    with open(fpath, 'r') as f:
+        lines = f.readlines()
+
+    for line in lines:
+        if key in line:
+            d[key] = line.split('=')[-1].split('\n')[0]
+
+    return d

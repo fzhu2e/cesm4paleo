@@ -2,6 +2,7 @@ import os
 import shutil
 from datetime import date
 import platform
+import pandas as pd
 
 from . import utils
 from .rof import ROF
@@ -73,18 +74,19 @@ class PaleoSetup:
 class CESMCase: 
     def __init__(self,
         account=None, casename=None, codebase=None,
-        res=None, machine=None, compset=None,
-        case_root=None, output_root=None, clean_old=True,
+        res=None, mach=None, compset=None,
+        case_root=None, output_root=None, clean_old=False,
     ):
         self.account = account
         self.casename = casename
         self.res = res
-        self.machine = 'derecho' if machine is None else machine
+        self.mach = 'derecho' if mach is None else mach
         self.compset = compset
         self.codebase = codebase
         self.case_dirpath = os.path.join(case_root, casename)
         self.output_root = output_root
         self.output_dirpath = os.path.join(output_root, casename)
+        self.notebook_dirpath = os.getcwd()
 
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> CESMCase.{k}: {v}')
@@ -94,7 +96,7 @@ class CESMCase:
             shutil.rmtree(self.output_dirpath) if os.path.exists(self.output_dirpath) else None
 
     def create(self, run_unsupported=False):
-        cmd = f'{self.codebase}/cime/scripts/create_newcase --case {self.case_dirpath} --res {self.res} --compset {self.compset} --output-root {self.output_root}'
+        cmd = f'{self.codebase}/cime/scripts/create_newcase --case {self.case_dirpath} --res {self.res} --compset {self.compset} --mach {self.mach} --output-root {self.output_root}'
         if run_unsupported:
             cmd += ' --run-unsupported'
 
@@ -113,13 +115,13 @@ class CESMCase:
     def setup(self):
         utils.run_shell('./case.setup')
 
-    def build(self, clean=False):
+    def build(self, clean=False, **qcmd_kws):
         cmd = './case.build'
         if clean:
             cmd += ' --clean'
             utils.run_shell(cmd)
         else:
-            utils.qcmd_script(cmd, account=self.account)
+            utils.qcmd_script(cmd, account=self.account, **qcmd_kws)
 
     def submit(self):
         utils.run_shell('./case.submit')
@@ -158,4 +160,41 @@ class CESMCase:
         utils.copy(mod_path, target_dir)
         utils.p_success(f'>>> Copy {mod_path} to: {target_dir}')
 
-        
+    def summary(self, exp_id=None, save_path=None,
+                atm_nml=['co2vmr', 'cldfrc_rhminl', 'micro_mg_dcs', 'dust_emis_fact'],
+                pop_nml=['dt_count'],
+                ):
+        exp_id = '001' if exp_id is None else exp_id
+
+        # basics
+        df = pd.DataFrame.from_dict(self.__dict__, orient='index', columns=[exp_id])
+
+        # paths for mapping and domain files
+        path_env_run_xml = os.path.join(self.case_dirpath, 'env_run.xml') 
+        for entry in ['atm_domain', 'lnd_domain', 'ocn_domain', 'ice_domain']:
+            path_tmp = utils.parse_xml(path_env_run_xml, f'{str.upper(entry)}_PATH')
+            file_tmp = utils.parse_xml(path_env_run_xml, f'{str.upper(entry)}_FILE')
+            df.loc[entry] = os.path.join(list(path_tmp.values())[0], list(file_tmp.values())[0])
+
+        for entry in ['atm2ocn_fmap', 'atm2ocn_smap', 'atm2ocn_vmap',
+                      'ocn2atm_fmap', 'ocn2atm_smap',
+                      'lnd2rof_fmap',
+                      'rof2lnd_fmap', 'rof2ocn_fmap', 'rof2ocn_rmap']:
+            path_tmp = utils.parse_xml(path_env_run_xml, f'{str.upper(entry)}NAME')
+            df.loc[entry] = list(path_tmp.values())[0]
+
+        # namelists
+        path_nml = os.path.join(self.case_dirpath, 'CaseDocs/atm_in') 
+        for entry in atm_nml:
+            df.loc[f'atm: {entry}'] = utils.parse_nml(path_nml, entry)[entry]
+
+        path_nml = os.path.join(self.case_dirpath, 'CaseDocs/pop_in') 
+        for entry in pop_nml:
+            df.loc[f'pop: {entry}'] = utils.parse_nml(path_nml, entry)[entry]
+                    
+
+        save_path = os.path.join(self.notebook_dirpath, f'summary_{exp_id}.csv') if save_path is None else save_path
+        df.to_csv(save_path)
+        utils.p_success(f'>>> Summary report saved to: {os.path.abspath(save_path)}')
+
+        return df
