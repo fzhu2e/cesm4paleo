@@ -51,6 +51,21 @@ def run_shell(cmd, timeout=None):
     except:
         pass
 
+def run_remote(host, cmd, timeout=None):
+    p_header(f'On host: {host}')
+    print(f'CMD >>> {cmd}')
+
+    try:
+        subprocess.Popen(
+            ['ssh', host, cmd],
+            timeout=timeout,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except:
+        pass
+
 def svn_export(url, fpath=None):
     if fpath is None:
         fpath = os.path.basename(url)
@@ -169,8 +184,8 @@ def merge_summaries(paths, save_path=None):
 
     return df
 
-def wildcard_paths(dirpath, pattern):
-    paths = sorted(glob.glob(os.path.join(dirpath, pattern)))
+def wildcard_paths(path_with_wildcard):
+    paths = sorted(glob.glob(path_with_wildcard))
     return paths
 
 def parse_xml(fpath, key):
@@ -193,3 +208,7 @@ def parse_nml(fpath, key):
             d[key] = line.split('=')[-1].split('\n')[0]
 
     return d
+
+def jupyter_server(port=8000):
+    cmd = f'jupyter lab --no-browser --port={port}'
+    subprocess.run(cmd, shell=True)

@@ -76,6 +76,7 @@ class CESMCase:
         account=None, casename=None, codebase=None,
         res=None, mach=None, compset=None,
         case_root=None, output_root=None, clean_old=False,
+        notebook_path=None,
     ):
         self.account = account
         self.casename = casename
@@ -86,7 +87,17 @@ class CESMCase:
         self.case_dirpath = os.path.join(case_root, casename)
         self.output_root = output_root
         self.output_dirpath = os.path.join(output_root, casename)
-        self.notebook_dirpath = os.getcwd()
+        self.notebook_path = notebook_path
+
+        hostname = platform.node()
+        if hostname[:7] == 'derecho':
+            self.hostname = 'derecho'
+        elif hostname[:8] == 'cheyenne':
+            self.hostname = 'cheyenne'
+        elif hostname[:6] == 'casper':
+            self.hostname = 'casper'
+        else:
+            utils.p_warning(f'Unknown hostname: {hostname}')
 
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> CESMCase.{k}: {v}')
@@ -101,7 +112,16 @@ class CESMCase:
             cmd += ' --run-unsupported'
 
         os.environ['PROJECT'] = self.account
-        utils.run_shell(cmd)
+        if self.mach in self.hostname:
+            utils.run_shell(cmd)
+        else:
+            if self.mach in 'derecho':
+                host = 'derecho.hpc.ucar.edu'
+            elif self.mach in 'cheyenne':
+                host = 'cheyenne.ucar.edu'
+
+            utils.run_remote(host, cmd)
+
         os.chdir(self.case_dirpath)
         utils.p_success(f'>>> Current directory switched to: {self.case_dirpath}')
 
@@ -193,7 +213,7 @@ class CESMCase:
             df.loc[f'pop: {entry}'] = utils.parse_nml(path_nml, entry)[entry]
                     
 
-        save_path = os.path.join(self.notebook_dirpath, f'summary_{exp_id}.csv') if save_path is None else save_path
+        save_path = os.path.join(os.path.dirname(self.notebook_path), f'summary_{exp_id}.csv') if save_path is None else save_path
         df.to_csv(save_path)
         utils.p_success(f'>>> Summary report saved to: {os.path.abspath(save_path)}')
 
