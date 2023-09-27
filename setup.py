@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='c4p',  # required
-    version='2023.9.26',
+    version='2023.9.27',
     description='c4p: CESM for Paleo',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -14,6 +14,7 @@ setup(
     url='https://github.com/fzhu2e/cesm4paleo',
     packages=find_packages(),
     include_package_data=True,
+    scripts=['bin/c4p'],
     package_data={'': ['src']},
     license='MIT',
     zip_safe=False,

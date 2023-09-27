@@ -51,21 +51,6 @@ def run_shell(cmd, timeout=None):
     except:
         pass
 
-def run_remote(host, cmd, timeout=None):
-    p_header(f'On host: {host}')
-    print(f'CMD >>> {cmd}')
-
-    try:
-        subprocess.Popen(
-            ['ssh', host, cmd],
-            timeout=timeout,
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-    except:
-        pass
-
 def svn_export(url, fpath=None):
     if fpath is None:
         fpath = os.path.basename(url)
@@ -209,6 +194,19 @@ def parse_nml(fpath, key):
 
     return d
 
-def jupyter_server(port=8000):
+def jupyter_server(port=None, qsub=False, name='JupyterLab', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+    port = 8000 if port is None else port
     cmd = f'jupyter lab --no-browser --port={port}'
-    subprocess.run(cmd, shell=True)
+
+    if qsub:
+        hostname = platform.node()
+        if hostname[:7] == 'derecho':
+            if queue is None: queue = 'main'
+        elif hostname[:8] == 'cheyenne':
+            if queue is None: queue = 'regular'
+        l1 = f'select={select}:ncpus={ncpus}:mpiprocs={mpiprocs}:mem={mem}GB'
+        l2 = f'walltime={walltime}'
+
+        run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2}  -A {account} -- {cmd}')
+    else:
+        run_shell(cmd)

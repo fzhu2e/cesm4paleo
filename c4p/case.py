@@ -87,7 +87,7 @@ class CESMCase:
         self.case_dirpath = os.path.join(case_root, casename)
         self.output_root = output_root
         self.output_dirpath = os.path.join(output_root, casename)
-        self.notebook_path = notebook_path
+        self.notebook_dirpath = os.getcwd()
 
         hostname = platform.node()
         if hostname[:7] == 'derecho':
@@ -213,7 +213,7 @@ class CESMCase:
             df.loc[f'pop: {entry}'] = utils.parse_nml(path_nml, entry)[entry]
                     
 
-        save_path = os.path.join(os.path.dirname(self.notebook_path), f'summary_{exp_id}.csv') if save_path is None else save_path
+        save_path = os.path.join(self.notebook_dirpath, f'summary_{exp_id}.csv') if save_path is None else save_path
         df.to_csv(save_path)
         utils.p_success(f'>>> Summary report saved to: {os.path.abspath(save_path)}')
 
