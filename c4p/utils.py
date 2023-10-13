@@ -78,17 +78,19 @@ def exec_script(fpath, args=None, timeout=None, chmod_add_x=False):
 
     run_shell(cmd, timeout=timeout)
 
-def make_pbs(fpath, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+def make_pbs(fpath=None, cmd=None, args=None, name='test', pbs_fname=None, queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
 
     if account is None:
         raise ValueError('account must be specified')
 
-    if args is None:
-        cmd = fpath
-    else:
-        cmd = f'{fpath} {args}'
+    if cmd is None:
+        if args is None:
+            cmd = fpath
+        else:
+            cmd = f'{fpath} {args}'
 
-    fname = f'pbs_{name}.zsh'
+    if pbs_fname is None:
+        pbs_fname = f'pbs_{name}.zsh'
 
     hostname = platform.node()
     if hostname[:7] == 'derecho':
@@ -98,7 +100,7 @@ def make_pbs(fpath, args=None, name='test', queue=None, select=1, ncpus=36, mpip
     elif hostname[:6] == 'casper':
         if queue is None: queue = 'regular'
 
-        with open(fname, 'w') as f:
+    with open(pbs_fname, 'w') as f:
             f.write(f'''#!/bin/zsh
 #PBS -N {name}
 #PBS -q {queue}
@@ -107,21 +109,27 @@ def make_pbs(fpath, args=None, name='test', queue=None, select=1, ncpus=36, mpip
 #PBS -A {account}
 
 {cmd}
-                    ''')
+                ''')
 
-    p_success(f'>>> {fname} created')
+    p_success(f'>>> {pbs_fname} created')
 
-def qsub_script(fpath, args=None, name='test', queue=None, job_priority=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False):
+def qsub_script(fpath, mach=None, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False):
     if chmod_add_x:
         run_shell(f'chmod +x {fpath}')
 
     if account is None:
         raise ValueError('account must be specified')
 
-    make_pbs(fpath, args=args, name=name, queue=queue, job_priority=job_priority, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
-    run_shell(f'qsub pbs_{name}.zsh')
+    make_pbs(fpath, args=args, name=name, queue=queue, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
+
+    if mach is not None:
+        cmd = f'qsub @{mach} pbs_{name}.zsh'
+    else:
+        cmd = f'qsub pbs_{name}.zsh'
+
+    run_shell(cmd)
     
-def qcmd_script(fpath, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False, **env_vars):
+def qcmd_script(fpath, mach=None, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False, **env_vars):
     if chmod_add_x:
         run_shell(f'chmod +x {fpath}')
 
@@ -146,7 +154,12 @@ def qcmd_script(fpath, args=None, name='test', queue=None, select=1, ncpus=36, m
     l1 = f'select={select}:ncpus={ncpus}:mpiprocs={mpiprocs}:mem={mem}GB'
     l2 = f'walltime={walltime}'
 
-    run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2}  -A {account} -- {cmd}')
+    if mach is not None:
+        exe = f'qcmd @{mach}'
+    else:
+        exe = 'qcmd'
+
+    run_shell(f'{exe} -N {name} -q {queue} -l {l1} -l {l2}  -A {account} -- {cmd}')
 
 def write_file(fname, content=None, mode='w'):
     if content is None:
@@ -189,8 +202,8 @@ def parse_nml(fpath, key):
         lines = f.readlines()
 
     for line in lines:
-        if key in line:
-            d[key] = line.split('=')[-1].split('\n')[0]
+        if key in line and key == line.split('=')[0].strip():
+            d[key] = line.split('=')[-1].strip().split('\n')[0]
 
     return d
 
@@ -210,3 +223,10 @@ def jupyter_server(port=None, qsub=False, name='JupyterLab', queue=None, select=
         run_shell(f'qcmd -N {name} -q {queue} -l {l1} -l {l2}  -A {account} -- {cmd}')
     else:
         run_shell(cmd)
+
+def monthly2annual(ds):
+    month_length = ds.time.dt.days_in_month
+    wgts_mon = month_length.groupby(
+        'time.year') / month_length.groupby('time.year').mean()
+    ds_ann = (ds * wgts_mon).groupby('time.year').mean('time')
+    return ds_ann.rename({'year':'time'})
