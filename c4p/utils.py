@@ -78,7 +78,8 @@ def exec_script(fpath, args=None, timeout=None, chmod_add_x=False):
 
     run_shell(cmd, timeout=timeout)
 
-def make_pbs(fpath=None, cmd=None, args=None, name='test', pbs_fname=None, queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None):
+def make_pbs(fpath=None, cmd=None, args=None, name='test', pbs_fname=None, queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None,
+             lines_before='', lines_after=''):
 
     if account is None:
         raise ValueError('account must be specified')
@@ -108,19 +109,23 @@ def make_pbs(fpath=None, cmd=None, args=None, name='test', pbs_fname=None, queue
 #PBS -l walltime={walltime}
 #PBS -A {account}
 
+{lines_before}
 {cmd}
+{lines_after}
                 ''')
 
     p_success(f'>>> {pbs_fname} created')
 
-def qsub_script(fpath, mach=None, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None, chmod_add_x=False):
+def qsub_script(fpath, mach=None, args=None, name='test', queue=None, select=1, ncpus=36, mpiprocs=36, mem=64, walltime='06:00:00', account=None,
+                lines_before='', lines_after='', chmod_add_x=False):
     if chmod_add_x:
         run_shell(f'chmod +x {fpath}')
 
     if account is None:
         raise ValueError('account must be specified')
 
-    make_pbs(fpath, args=args, name=name, queue=queue, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account)
+    make_pbs(fpath, args=args, name=name, queue=queue, select=select, ncpus=ncpus, mpiprocs=mpiprocs, mem=mem, walltime=walltime, account=account,
+             lines_before=lines_before, lines_after=lines_after)
 
     if mach is not None:
         cmd = f'qsub @{mach} pbs_{name}.zsh'

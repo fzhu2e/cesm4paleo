@@ -41,7 +41,7 @@ class Mapping:
             utils.qsub_script(
                 self.gen_cesm_maps_script,
                 args=f'-fatm {self.atm_scrip} -natm {self.atm_grid_name} -focn {self.ocn_scrip} -nocn {self.ocn_grid_name} --nogridcheck',
-                name=self.job_name, account=self.account, **qsub_kws,
+                name=f'{self.job_name}_ocn2atm', account=self.account, **qsub_kws,
             )
         else:
             utils.exec_script(
@@ -55,7 +55,7 @@ class Mapping:
             utils.qsub_script(
                 self.gen_esmf_map_script,
                 args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.atm_scrip} -ndst {self.atm_grid_name} -map aave',
-                name=self.job_name, account=self.account, **qsub_kws,
+                name=f'{self.job_name}_rof2atm', account=self.account, lines_before='NCPUS=36', **qsub_kws,
             )
         else:
             utils.exec_script(
@@ -69,7 +69,7 @@ class Mapping:
             utils.qsub_script(
                 self.gen_esmf_map_script,
                 args=f'-fsrc {self.atm_scrip} -nsrc {self.atm_grid_name} -fdst {self.rof_scrip} -ndst {self.rof_grid_name} -map aave',
-                name=self.job_name, account=self.account, **qsub_kws,
+                name=f'{self.job_name}_atm2rof', account=self.account, lines_before='NCPUS=36', **qsub_kws,
             )
         else:
             utils.exec_script(
@@ -83,7 +83,7 @@ class Mapping:
             utils.qsub_script(
                 self.gen_esmf_map_script,
                 args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.ocn_scrip} -ndst {self.ocn_grid_name} -map aave',
-                name=self.job_name, account=self.account, **qsub_kws,
+                name=f'{self.job_name}_rof2ocn', account=self.account, lines_before='NCPUS=36', **qsub_kws,
             )
         else:
             utils.exec_script(

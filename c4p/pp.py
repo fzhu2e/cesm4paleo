@@ -17,7 +17,8 @@ class Archive:
     def __init__(self, paths, output_dir='./output', load_num=None, settings_csv=None):
         self.paths = paths[:load_num]
         utils.p_header(f'>>> {len(self.paths)} Archive.paths:')
-        print(self.paths)
+        print(f'Start: {os.path.basename(self.paths[0])}')
+        print(f'End: {os.path.basename(self.paths[-1])}')
 
         ds_all_vars = self.get_ds()
         if 'ncol' in ds_all_vars.dims:
@@ -73,6 +74,10 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             utils.make_pbs(cmd=cmd, name=name, pbs_fname=pbs_fname, account=account, **qsub_kws)
             utils.run_shell(f'qsub {pbs_fname}')
             utils.p_header(f'The output will be located at: {os.path.abspath(output_fpath)}')
+    
+    def clean_pbs(self):
+        utils.run_shell(f'rm -rf *slice2series*')
+        
 
     def ann_gm(self, adjust_month=True, vn=['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF']):
         if type(vn) is not list: vn = [vn]
@@ -130,7 +135,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             'GMST': (13.5, 15.5),
             'GMRESTOM': (-1, 3),
             'GMLWCF': (24, 26),
-            'GMSWCF': (-54, -44),
+            'GMSWCF': (-52, -44),
         }
         if ylim_dict is not None:
             _ylim_dict.update(ylim_dict)
@@ -209,6 +214,109 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             title += f'\n{settings_info}'
             
         fig.suptitle(title)
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+class Archives:
+    def __init__(self, archive_dict=None):
+        self.archive_dict = archive_dict
+        for k, v in self.archive_dict.items():
+            v.name = k
+    
+    def calc_diagnostic(self):
+        for k, v in self.archive_dict.items():
+            print(f'>>> Processing {k} ...')
+            self.archive_dict[k].calc_diagnostic()
+
+    def plot_diagnostic(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
+                        xlabel='Time [yr]', ylable_dict=None, ylim_dict=None, ax=None, prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], lgd_anchor=(-1, -1.2),
+                        plot_list=None, **plot_kws):
+
+        if ax is None:
+            fig = plt.figure(figsize=figsize)
+            ax = {}
+
+        nrow = int(np.ceil(len(vn)/ncol))
+        gs = gridspec.GridSpec(nrow, ncol)
+        gs.update(wspace=wspace, hspace=hspace)
+
+        _ylim_dict = {
+            'GMST': (13.5, 15.5),
+            'GMRESTOM': (-1, 3),
+            'GMLWCF': (24, 26),
+            'GMSWCF': (-52, -44),
+        }
+        if ylim_dict is not None:
+            _ylim_dict.update(ylim_dict)
+
+        _ylb_dict = {
+            'GMST': r'GMST [$^\circ$C]',
+            'GMRESTOM': r'GMRESTOM [W/m$^2$]',
+            'GMLWCF': r'GMLWCF [W/m$^2$]',
+            'GMSWCF': r'GMSWCF [W/m$^2$]',
+        }
+        if ylable_dict is not None:
+            _ylb_dict.update(ylable_dict)
+
+        i = 0
+        i_row, i_col = 0, 0
+        for v in vn:
+            if 'fig' in locals():
+                ax[v] = fig.add_subplot(gs[i_row, i_col])
+
+            if i_row == nrow-1:
+                _xlb = xlabel
+            else:
+                _xlb = None
+
+
+            if v == 'GMRESTOM':
+                ax[v].axhline(y=0, linestyle='--', color='tab:grey')
+            elif v == 'GMLWCF':
+                ax[v].axhline(y=25, linestyle='--', color='tab:grey')
+            elif v == 'GMSWCF':
+                ax[v].axhline(y=-47, linestyle='--', color='tab:grey')
+            elif v == 'GMST':
+                ax[v].axhline(y=14, linestyle='--', color='tab:grey')
+
+            _plot_kws = {
+                'linewidth': 2,
+            }
+            if plot_kws is not None:
+                _plot_kws.update(plot_kws)
+            
+            if plot_list is None: plot_list = list(self.archive_dict.keys())
+            for k, ar in self.archive_dict.items():
+                if k in plot_list:
+                    settings_info = ''
+                    for name in prt_setting_list:
+                        nm = f'atm: {name}'
+                        settings_info += f'{name}: {ar.settings_df.loc[nm].values[0].strip()}'
+                        settings_info += ', '
+                    settings_info = settings_info[:-2]
+
+                    ax[v].plot(ar.diagnostic[v].time.values, ar.diagnostic[v].values, label=settings_info, **_plot_kws)
+
+            ax[v].set_xlim(xlim)
+            ax[v].set_ylim(_ylim_dict[v])
+            ax[v].set_xlabel(_xlb)
+            ax[v].set_ylabel(_ylb_dict[v])
+
+            i += 1
+            i_col += 1
+
+            if i % 2 == 0:
+                i_row += 1
+
+            if i_col == ncol:
+                i_col = 0
+
+        ax[v].legend(loc='lower left', bbox_to_anchor=lgd_anchor)
+        if title is not None:
+            fig.suptitle(title)
 
         if 'fig' in locals():
             return fig, ax
