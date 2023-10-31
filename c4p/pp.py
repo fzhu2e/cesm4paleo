@@ -271,8 +271,8 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         self.diagnostic = ds
         utils.p_success(f'Archive.diagnostic generated with variables: {vn}')
 
-    def plot_diagnostic_ocn(self, vn=['amoc_yz', 'amoc_t'], figsize=[10, 4], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
-                        amoc_levels=np.linspace(-24, 24, 25), xlabel_dict=None, ylable_dict=None, color_dict=None, ylim_dict=None, ax=None, print_settings=True,
+    def plot_diagnostic_ocn(self, vn=['amoc_yz', 'amoc_t'], figsize=[10, 4], ncol=2, wspace=0.3, hspace=0.2, title=None,
+                        amoc_levels=np.linspace(-24, 24, 25), xlabel_dict=None, ylable_dict=None, ax=None, print_settings=True,
                         prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], **plot_kws):
 
         if ax is None:
