@@ -37,59 +37,43 @@ class Mapping:
 
     def ocn2atm(self, qsub=True, **qsub_kws):
         utils.p_header(f'>>> Creating ocean<->atmosphere mapping files')
+        script = self.gen_cesm_maps_script
+        args = f'-fatm {self.atm_scrip} -natm {self.atm_grid_name} -focn {self.ocn_scrip} -nocn {self.ocn_grid_name} --nogridcheck'
+        print(f'CMD >>> {script} {args}')
         if qsub:
-            utils.qsub_script(
-                self.gen_cesm_maps_script,
-                args=f'-fatm {self.atm_scrip} -natm {self.atm_grid_name} -focn {self.ocn_scrip} -nocn {self.ocn_grid_name} --nogridcheck',
-                name=f'{self.job_name}_ocn2atm', account=self.account, **qsub_kws,
-            )
+            utils.qsub_script(script, args=args, name=f'{self.job_name}_ocn2atm', account=self.account, **qsub_kws)
         else:
-            utils.exec_script(
-                self.gen_cesm_maps_script,
-                args=f'-fatm {self.atm_scrip} -natm {self.atm_grid_name} -focn {self.ocn_scrip} -nocn {self.ocn_grid_name} --nogridcheck',
-            )
+            utils.exec_script(script, args=args)
 
     def rof2atm(self, qsub=True, **qsub_kws):
         utils.p_header(f'>>> Creating river->atmosphere(land) mapping files')
+        script = self.gen_esmf_map_script
+        args = f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.atm_scrip} -ndst {self.atm_grid_name} -map aave'
+        print(f'CMD >>> {script} {args}')
         if qsub:
-            utils.qsub_script(
-                self.gen_esmf_map_script,
-                args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.atm_scrip} -ndst {self.atm_grid_name} -map aave',
-                name=f'{self.job_name}_rof2atm', account=self.account, lines_before='NCPUS=36', **qsub_kws,
-            )
+            utils.qsub_script(script, args=args, name=f'{self.job_name}_rof2atm', account=self.account, lines_before='NCPUS=36', **qsub_kws)
         else:
-            utils.exec_script(
-                self.gen_esmf_map_script,
-                args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.atm_scrip} -ndst {self.atm_grid_name} -map aave',
-            )
+            utils.exec_script(script, args=args)
     
     def atm2rof(self, qsub=True, **qsub_kws):
         utils.p_header(f'>>> Creating atmosphere(land)->river mapping files')
+        script = self.gen_esmf_map_script
+        args = f'-fsrc {self.atm_scrip} -nsrc {self.atm_grid_name} -fdst {self.rof_scrip} -ndst {self.rof_grid_name} -map aave'
+        print(f'CMD >>> {script} {args}')
         if qsub:
-            utils.qsub_script(
-                self.gen_esmf_map_script,
-                args=f'-fsrc {self.atm_scrip} -nsrc {self.atm_grid_name} -fdst {self.rof_scrip} -ndst {self.rof_grid_name} -map aave',
-                name=f'{self.job_name}_atm2rof', account=self.account, lines_before='NCPUS=36', **qsub_kws,
-            )
+            utils.qsub_script(script, args=args, name=f'{self.job_name}_atm2rof', account=self.account, lines_before='NCPUS=36', **qsub_kws)
         else:
-            utils.exec_script(
-                self.gen_esmf_map_script,
-                args=f'-fsrc {self.atm_scrip} -nsrc {self.atm_grid_name} -fdst {self.rof_scrip} -ndst {self.rof_grid_name} -map aave',
-            )
+            utils.exec_script(script, args=args)
         
     def rof2ocn(self, qsub=True, **qsub_kws):
         utils.p_header(f'>>> Creating river->ocean mapping files')
+        script = self.gen_esmf_map_script
+        args = f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.ocn_scrip} -ndst {self.ocn_grid_name} -map aave'
+        print(f'CMD >>> {script} {args}')
         if qsub:
-            utils.qsub_script(
-                self.gen_esmf_map_script,
-                args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.ocn_scrip} -ndst {self.ocn_grid_name} -map aave',
-                name=f'{self.job_name}_rof2ocn', account=self.account, lines_before='NCPUS=36', **qsub_kws,
-            )
+            utils.qsub_script(script, args=args, name=f'{self.job_name}_rof2ocn', account=self.account, lines_before='NCPUS=36', **qsub_kws)
         else:
-            utils.exec_script(
-                self.gen_esmf_map_script,
-                args=f'-fsrc {self.rof_scrip} -nsrc {self.rof_grid_name} -fdst {self.ocn_scrip} -ndst {self.ocn_grid_name} -map aave',
-            )
+            utils.exec_script(script, args=args)
 
     def gen_mapping(self, qsub=True, **qsub_kws):
         self.ocn2atm(qsub=qsub, **qsub_kws)
@@ -100,17 +84,13 @@ class Mapping:
     def gen_domain(self, qsub=True, **qsub_kws):
         utils.p_header(f'>>> Creating ocean<->atmosphere domain files')
         date_today = date.today().strftime('%y%m%d')
+        exe = self.gen_domain_exe
+        args = f'-m map_{self.ocn_grid_name}_TO_{self.atm_grid_name}_aave.{date_today}.nc -o {self.ocn_grid_name} -l {self.atm_grid_name}'
+        print(f'CMD >>> {exe} {args}')
         if qsub:
-            utils.qsub_script(
-                self.gen_domain_exe,
-                args=f'-m map_{self.ocn_grid_name}_TO_{self.atm_grid_name}_aave.{date_today}.nc -o {self.ocn_grid_name} -l {self.atm_grid_name}',
-                name=self.job_name, account=self.account, **qsub_kws,
-            )
+            utils.qsub_script(exe, args=args, name='gen_domain', account=self.account, **qsub_kws)
         else:
-            utils.exec_script(
-                self.gen_domain_exe,
-                args=f'-m map_{self.ocn_grid_name}_TO_{self.atm_grid_name}_aave.{date_today}.nc -o {self.ocn_grid_name} -l {self.atm_grid_name}',
-            )
+            utils.exec_script(exe, args=args)
 
     def clean(self):
         utils.run_shell(f'rm -rf {self.job_name}.* PET* pbs_*')

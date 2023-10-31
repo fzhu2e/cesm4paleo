@@ -29,6 +29,10 @@ class Archive:
             self.grid = 'FV'
             self.grid_weight = ds_all_vars.gw
             self.grid_dim = ('lat', 'lon')
+        elif 'z_t' in ds_all_vars.dims and 'moc_z' in ds_all_vars.dims:
+            self.grid = 'OCN'
+            self.grid_weight = ds_all_vars.TAREA
+            self.grid_dim = ('nlat', 'nlon')
         else:
             raise ValueError('Unkonwn grid!')
 
@@ -79,6 +83,17 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         utils.run_shell(f'rm -rf *slice2series*')
         
 
+    def ann(self, adjust_month=True, vn=['MOC']):
+        if type(vn) is not list: vn = [vn]
+        ds = xr.Dataset()
+        for v in vn:
+            da = xr.open_dataset(os.path.join(self.output_dir, f'{v}.nc'))[v]
+            if adjust_month:
+                da['time'] = da['time'].get_index('time') - datetime.timedelta(days=1)
+            da_ann = utils.monthly2annual(da)
+            ds[v] = da_ann
+        return ds
+
     def ann_gm(self, adjust_month=True, vn=['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF']):
         if type(vn) is not list: vn = [vn]
         ds = xr.Dataset()
@@ -91,7 +106,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             ds[v] = da_ann_gm
         return ds
 
-    def calc_diagnostic(self, adjust_month=True, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF']):
+    def calc_diagnostic_atm(self, adjust_month=True, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF']):
         vn_map = {
             'GMST': 'TS',
             'GMRESTOM': ('FSNT', 'FLNT'),
@@ -105,7 +120,8 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
                     vn_raw.append(v_tmp)
             else:
                 vn_raw.append(vn_map[v])
-
+            
+        vn_raw = list(set(vn_raw))
         ds_raw = self.ann_gm(adjust_month=adjust_month, vn=vn_raw)
         ds = xr.Dataset()
         for v in vn:
@@ -119,7 +135,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         self.diagnostic = ds
         utils.p_success(f'Archive.diagnostic generated with variables: {vn}')
 
-    def plot_diagnostic(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
+    def plot_diagnostic_atm(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
                         xlabel='Time [yr]', ylable_dict=None, color_dict=None, ylim_dict=None, ax=None, print_settings=True,
                         prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], **plot_kws):
 
@@ -220,18 +236,138 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         else:
             return ax
 
+    def calc_diagnostic_ocn(self, adjust_month=True, vn=['amoc_yz', 'amoc_t']):
+        vn_map = {
+            'amoc_yz': 'MOC',
+            'amoc_t': 'MOC',
+        }
+        vn_raw = []
+        for v in vn:
+            if type(vn_map[v]) is list or type(vn_map[v]) is tuple:
+                for v_tmp in vn_map[v]:
+                    vn_raw.append(v_tmp)
+            else:
+                vn_raw.append(vn_map[v])
+
+        vn_raw = list(set(vn_raw))
+        ds_raw = self.ann(adjust_month=adjust_month, vn=vn_raw)
+        ds_raw['moc_z'] = ds_raw['moc_z']/1e5  # cm -> km
+        ds_raw['moc_z'].attrs['units'] = 'km'
+        ds = xr.Dataset()
+        for v in vn:
+            if v == 'amoc_yz':
+                ds[v] = ds_raw[vn_map[v]].isel(
+                    transport_reg=1, moc_comp=0, time=slice(-30, None),
+                ).mean('time').where(ds_raw[vn_map[v]].lat_aux_grid>-35)
+            elif v == 'amoc_t':
+                ds[v] = ds_raw[vn_map[v]].isel(
+                    transport_reg=1, moc_comp=0,
+                ).sel(
+                    moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90),
+                ).max(dim=('moc_z', 'lat_aux_grid'))
+            else:
+                ds[v] = ds_raw[vn_map[v]]
+
+        self.diagnostic = ds
+        utils.p_success(f'Archive.diagnostic generated with variables: {vn}')
+
+    def plot_diagnostic_ocn(self, vn=['amoc_yz', 'amoc_t'], figsize=[10, 4], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
+                        amoc_levels=np.linspace(-24, 24, 25), xlabel_dict=None, ylable_dict=None, color_dict=None, ylim_dict=None, ax=None, print_settings=True,
+                        prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], **plot_kws):
+
+        if ax is None:
+            fig = plt.figure(figsize=figsize)
+            ax = {}
+
+        _xlb_dict = {
+            'amoc_yz': 'Latitude',
+            'amoc_t': 'Time [yr]',
+        }
+        if xlabel_dict is not None:
+            _xlb_dict.update(xlabel_dict)
+
+        _ylb_dict = {
+            'amoc_yz': 'Depth [km]',
+            'amoc_t': 'AMOC [Sv]',
+        }
+        if ylable_dict is not None:
+            _ylb_dict.update(ylable_dict)
+
+        nrow = int(np.ceil(len(vn)/ncol))
+        gs = gridspec.GridSpec(nrow, ncol)
+        gs.update(wspace=wspace, hspace=hspace)
+
+        i = 0
+        i_row, i_col = 0, 0
+        ds = self.diagnostic
+        for v in vn:
+            if 'fig' in locals():
+                ax[v] = fig.add_subplot(gs[i_row, i_col])
+
+            if v == 'amoc_yz':
+                ax[v].contourf(ds[v].lat_aux_grid, ds[v].moc_z, ds[v], cmap='RdBu_r', extend='both', levels=amoc_levels)
+                ax[v].set_xticks([-30, 0, 30, 60, 90])
+                ax[v].set_xlim([-35, 90])
+                ax[v].invert_yaxis()
+                ax[v].set_yticks([0, 2, 4])
+            elif v == 'amoc_t':
+                ax[v].plot(ds[v].time, ds[v])
+                ax[v].set_ylim([4, 30])
+
+            ax[v].set_xlabel(_xlb_dict[v])
+            ax[v].set_ylabel(_ylb_dict[v])
+            _plot_kws = {
+                'linewidth': 2,
+            }
+            if plot_kws is not None:
+                _plot_kws.update(plot_kws)
+
+            i += 1
+            i_col += 1
+
+            if i % 2 == 0:
+                i_row += 1
+
+            if i_col == ncol:
+                i_col = 0
+
+        if print_settings:
+            settings_info = ''
+            for name in prt_setting_list:
+                nm = f'atm: {name}'
+                settings_info += f'{name}: {self.settings_df.loc[nm].values[0].strip()}'
+                settings_info += ', '
+            settings_info = settings_info[:-2]
+
+        if title is None:
+            title = settings_info
+        else:
+            title += f'\n{settings_info}'
+            
+        fig.suptitle(title)
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
 class Archives:
     def __init__(self, archive_dict=None):
         self.archive_dict = archive_dict
         for k, v in self.archive_dict.items():
             v.name = k
     
-    def calc_diagnostic(self):
+    def calc_diagnostic_atm(self):
         for k, v in self.archive_dict.items():
             print(f'>>> Processing {k} ...')
-            self.archive_dict[k].calc_diagnostic()
+            self.archive_dict[k].calc_diagnostic_atm()
 
-    def plot_diagnostic(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
+    def calc_diagnostic_ocn(self):
+        for k, v in self.archive_dict.items():
+            print(f'>>> Processing {k} ...')
+            self.archive_dict[k].calc_diagnostic_ocn()
+
+    def plot_diagnostic_atm(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=(0, 100), title=None,
                         xlabel='Time [yr]', ylable_dict=None, ylim_dict=None, ax=None, prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], lgd_anchor=(-1, -1.2),
                         plot_list=None, **plot_kws):
 
