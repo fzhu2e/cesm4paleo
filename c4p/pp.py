@@ -1,5 +1,6 @@
 
 import os
+import copy
 import glob
 import xarray as xr
 import numpy as np
@@ -43,6 +44,11 @@ class Archive:
             self.grid_weight = ds_all_vars.tarea.fillna(0)
             self.grid_dim = ('ni', 'nj')
             self.lat = ds_all_vars.TLAT
+        elif 'lndgrid' in ds_all_vars.dims:
+            self.grid = 'LND'
+            self.grid_weight = ds_all_vars.area.fillna(0)
+            self.grid_dim = ('lndgrid')
+            self.lat = ds_all_vars.lat
         else:
             raise ValueError('Unkonwn grid!')
 
@@ -65,7 +71,7 @@ class Archive:
         with xr.open_mfdataset(self.paths[:load_num]) as ds:
             return ds
 
-    def slice2series(self, vn=['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF', 'MOC', 'aice'], load_num=None, account=None, **qsub_kws):
+    def slice2series(self, vn=['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF', 'ICEFRAC', 'MOC', 'aice', 'TSA'], load_num=None, account=None, **qsub_kws):
         if type(vn) is not list: vn = [vn]
         vn = list(set(vn) - (set(vn) - set(self.vars)))
         for v in vn:
@@ -83,7 +89,9 @@ class Archive:
             cmd = f'''
 module list > /dev/null 2>&1 || source $LMOD_ROOT/lmod/init/zsh
 module --force purge
+module load ncarenv-basic/23.09 intel-classic/2023.2.1
 module load nco
+module load udunits
 ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             '''
             utils.make_pbs(cmd=cmd, name=name, pbs_fname=pbs_fname, account=account, **qsub_kws)
@@ -92,8 +100,8 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
     
     def clean_pbs(self):
         utils.run_shell(f'rm -rf *slice2series*')
-        
-    def clim(self, vn=['aice'], adjust_month=True):
+
+    def clim(self, timeslice=None, vn=['aice'], adjust_month=True):
         if type(vn) is not list: vn = [vn]
         vn = list(set(vn) - (set(vn) - set(self.vars)))
         ds = xr.Dataset()
@@ -101,23 +109,11 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             da = xr.open_dataset(os.path.join(self.output_dir, f'{v}.nc'))[v]
             if adjust_month:
                 da['time'] = da['time'].get_index('time') - datetime.timedelta(days=1)
-            da_clim = da.groupby('time.month').mean()
+            if timeslice is not None:
+                da_clim = da.isel(time=timeslice).groupby('time.month').mean()
+            else:
+                da_clim = da.groupby('time.month').mean()
             ds[v] = da_clim
-        return ds
-
-    def clim_gm(self, vn, adjust_month=True):
-        ds_clim = self.clim(vn=vn, adjust_month=adjust_month)
-        ds = ds_clim.weighted(self.grid_weight).mean(self.grid_dim)
-        return ds
-
-    def clim_nhm(self, vn, adjust_month=True):
-        ds_clim = self.clim(vn=vn, adjust_month=adjust_month)
-        ds = ds_clim.where(self.lat>=0).weighted(self.grid_weight).mean(self.grid_dim)
-        return ds
-
-    def clim_shm(self, vn, adjust_month=True):
-        ds_clim = self.clim(vn=vn, adjust_month=adjust_month)
-        ds = ds_clim.where(self.lat<=0).weighted(self.grid_weight).mean(self.grid_dim)
         return ds
 
     def ann(self, vn=['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF', 'MOC', 'aice'], adjust_month=True):
@@ -132,29 +128,26 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             ds[v] = da_ann
         return ds
 
-    def ann_gm(self, vn, adjust_month=True):
-        ds_ann = self.ann(vn=vn, adjust_month=adjust_month)
-        ds = ds_ann.weighted(self.grid_weight).mean(self.grid_dim)
-        return ds
+    def gm(self, ds):
+        ds_res = ds.weighted(self.grid_weight).mean(self.grid_dim)
+        return ds_res
 
-    def ann_nhm(self, vn, adjust_month=True):
-        ds_ann = self.ann(vn=vn, adjust_month=adjust_month)
-        ds = ds_ann.where(self.lat>=0).weighted(self.grid_weight).mean(self.grid_dim)
-        return ds
+    def nhm(self, ds):
+        ds_res = ds.where(self.lat>=0).weighted(self.grid_weight).mean(self.grid_dim)
+        return ds_res
 
-    def ann_shm(self, vn, adjust_month=True):
-        ds_ann = self.ann(vn=vn, adjust_month=adjust_month)
-        ds = ds_ann.where(self.lat<=0).weighted(self.grid_weight).mean(self.grid_dim)
-        return ds
+    def shm(self, ds):
+        ds_res = ds.where(self.lat<=0).weighted(self.grid_weight).mean(self.grid_dim)
+        return ds_res
 
-    def calc_ts(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF', 'NHAICE'], adjust_month=True):
+    def calc_ts(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF', 'GMTSA'], adjust_month=True):
         if type(vn) is not list: vn = [vn]
         vn_map = {
             'GMST': 'TS',
             'GMRESTOM': ('FSNT', 'FLNT'),
             'GMLWCF': 'LWCF',
             'GMSWCF': 'SWCF',
-            'NHAICE': 'aice',
+            'GMTSA': 'TSA',
         }
         vn_raw = []
         for v in vn_map.values():
@@ -178,14 +171,14 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         ds = xr.Dataset()
         for v in vn:
             if v[:2] == 'GM':
-                ds_raw = self.ann_gm(adjust_month=adjust_month, vn=vn_raw)
+                ds_raw = self.gm(self.ann(adjust_month=adjust_month, vn=vn_raw))
             elif v[:2] == 'NH':
-                ds_raw = self.ann_nhm(adjust_month=adjust_month, vn=vn_raw)
+                ds_raw = self.nhm(self.ann(adjust_month=adjust_month, vn=vn_raw))
             elif v[:2] == 'SH':
-                ds_raw = self.ann_shm(adjust_month=adjust_month, vn=vn_raw)
+                ds_raw = self.shm(self.ann(adjust_month=adjust_month, vn=vn_raw))
 
-            if v == 'GMST':
-                ds[v] = ds_raw[vn_map[v]] - 273.15
+            if v == 'GMST' or v == 'GMTSA':
+                ds[v] = ds_raw[vn_map[v]] - 273.15  # K -> degC
             elif v == 'GMRESTOM':
                 ds[v] = ds_raw[vn_map[v][0]] - ds_raw[vn_map[v][1]]
             else:
@@ -194,7 +187,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         self.diagnostic = ds
         utils.p_success(f'Archive.diagnostic generated with variables: {vn}')
 
-    def plot_ts(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF', 'NHAICE'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=None, title=None,
+    def plot_ts(self, vn=['GMST', 'GMRESTOM', 'GMLWCF', 'GMSWCF', 'GMTSA'], figsize=[10, 6], ncol=2, wspace=0.3, hspace=0.2, xlim=None, title=None,
                         xlabel='Time [yr]', ylable_dict=None, color_dict=None, ylim_dict=None, ax=None, print_settings=True,
                         prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], **plot_kws):
         # remove unavailable variables
@@ -217,7 +210,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             'GMRESTOM': (-1, 3),
             'GMLWCF': (24, 26),
             'GMSWCF': (-52, -44),
-            'NHAICE': (0, 10),
+            'GMTSA': (6, 10),
         }
         if ylim_dict is not None:
             _ylim_dict.update(ylim_dict)
@@ -227,7 +220,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             'GMRESTOM': r'GMRESTOM [W/m$^2$]',
             'GMLWCF': r'GMLWCF [W/m$^2$]',
             'GMSWCF': r'GMSWCF [W/m$^2$]',
-            'NHAICE': r'NHAICE [%]',
+            'GMTSA': r'GMTSA [$^\circ$C]',
         }
         if ylable_dict is not None:
             _ylb_dict.update(ylable_dict)
@@ -237,7 +230,7 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             'GMRESTOM': 'tab:blue',
             'GMLWCF': 'tab:green',
             'GMSWCF': 'tab:orange',
-            'NHAICE': 'tab:blue',
+            'GMTSA': 'tab:red',
         }
         if color_dict is not None:
             _clr_dict.update(color_dict)
@@ -299,58 +292,35 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             else:
                 title += f'\n{settings_info}'
 
-                fig.suptitle(title)
+            fig.suptitle(title)
 
         if 'fig' in locals():
             return fig, ax
         else:
             return ax
 
-    def calc_amoc(self, adjust_month=True, vn=['amoc_yz', 'amoc_t']):
-        vn_map = {
-            'amoc_yz': 'MOC',
-            'amoc_t': 'MOC',
-        }
-        vn_raw = []
-        for v in vn:
-            if type(vn_map[v]) is list or type(vn_map[v]) is tuple:
-                for v_tmp in vn_map[v]:
-                    vn_raw.append(v_tmp)
-            else:
-                vn_raw.append(vn_map[v])
-
-        vn_raw = list(set(vn_raw) - (set(vn_raw) - set(self.vars)))
-        ds_raw = self.ann(adjust_month=adjust_month, vn=vn_raw)
+    def calc_amoc(self, adjust_month=True):
+        ds_raw = self.ann(adjust_month=adjust_month, vn=['MOC'])
         ds_raw['moc_z'] = ds_raw['moc_z']/1e5  # cm -> km
         ds_raw['moc_z'].attrs['units'] = 'km'
         ds = xr.Dataset()
-        for v in vn:
-            if v == 'amoc_yz':
-                ds[v] = ds_raw[vn_map[v]].isel(
-                    transport_reg=1, moc_comp=0, time=slice(-30, None),
-                ).mean('time').where(ds_raw[vn_map[v]].lat_aux_grid>-35)
-            elif v == 'amoc_t':
-                ds[v] = ds_raw[vn_map[v]].isel(
-                    transport_reg=1, moc_comp=0,
-                ).sel(
-                    moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90),
-                ).max(dim=('moc_z', 'lat_aux_grid'))
-            else:
-                ds[v] = ds_raw[vn_map[v]]
+
+        ds['amoc_yz'] = ds_raw['MOC'].isel(
+            transport_reg=1, moc_comp=0, time=slice(-30, None),
+        ).mean('time').where(ds_raw['MOC'].lat_aux_grid>-35)
+
+        ds['amoc_t'] = ds_raw['MOC'].isel(
+            transport_reg=1, moc_comp=0,
+        ).sel(
+            moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90),
+        ).max(dim=('moc_z', 'lat_aux_grid'))
 
         self.diagnostic = ds
-        utils.p_success(f'Archive.diagnostic generated with variables: {vn}')
+        utils.p_success(f'Archive.diagnostic generated with variables: {["amoc_t", "amoc_yz"]}')
 
-    def plot_amoc(self, vn=['amoc_t', 'amoc_yz'], figsize=[10, 4], ncol=2, wspace=0.3, hspace=0.2, title=None,
+    def plot_amoc(self, figsize=[10, 4], ncol=2, wspace=0.3, hspace=0.2, title=None,
                         amoc_levels=np.linspace(-24, 24, 25), xlabel_dict=None, ylable_dict=None, ax=None, print_settings=True,
                         prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], amoc_t_xlim=None, amoc_t_ylim=(4, 30), **plot_kws):
-        # remove unavailable variables
-        vn_new = []
-        for v in vn:
-            if v in self.diagnostic:
-                vn_new.append(v)
-        vn = vn_new
-
         if ax is None:
             fig = plt.figure(figsize=figsize)
             ax = {}
@@ -369,14 +339,13 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
         if ylable_dict is not None:
             _ylb_dict.update(ylable_dict)
 
-        nrow = int(np.ceil(len(vn)/ncol))
-        gs = gridspec.GridSpec(nrow, ncol)
+        gs = gridspec.GridSpec(1, ncol)
         gs.update(wspace=wspace, hspace=hspace)
 
         i = 0
         i_row, i_col = 0, 0
         ds = self.diagnostic
-        for v in vn:
+        for v in ['amoc_t', 'amoc_yz']:
             if 'fig' in locals():
                 ax[v] = fig.add_subplot(gs[i_row, i_col])
 
@@ -397,6 +366,96 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
 
             ax[v].set_xlabel(_xlb_dict[v])
             ax[v].set_ylabel(_ylb_dict[v])
+            _plot_kws = {
+                'linewidth': 2,
+            }
+            if plot_kws is not None:
+                _plot_kws.update(plot_kws)
+
+            i += 1
+            i_col += 1
+
+            if i % 2 == 0:
+                i_row += 1
+
+            if i_col == ncol:
+                i_col = 0
+
+        if hasattr(self, 'settings_df') and print_settings:
+            settings_info = ''
+            for name in prt_setting_list:
+                nm = f'atm: {name}'
+                settings_info += f'{name}: {self.settings_df.loc[nm].values[0].strip()}'
+                settings_info += ', '
+            settings_info = settings_info[:-2]
+
+        if 'settings_info' in locals():
+            if title is None:
+                title = settings_info
+            else:
+                title += f'\n{settings_info}'
+
+                fig.suptitle(title)
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_nhaice(self, vn='ICEFRAC', adjust_month=True, timeslice=None):
+        ds = xr.Dataset()
+        ds_ann = self.ann(adjust_month=adjust_month, vn=vn)
+        ds_clim = self.clim(timeslice=timeslice, vn=vn, adjust_month=adjust_month)
+
+        if vn == 'ICEFRAC':
+            convert_factor = 4*np.pi*6.37122**2 / self.grid_weight.sum().values  # 1e6 km^2
+        elif vn == 'aice':
+            convert_factor = 4*np.pi*6.37122**2 / self.grid_weight.sum().values / 100  # 1e6 km^2
+
+        ds['NHAICE'] = ds_ann[vn].where(self.lat>0).weighted(self.grid_weight).sum(self.grid_dim) * convert_factor
+        ds['clim_NHAICE'] = ds_clim[vn].where(self.lat>0).weighted(self.grid_weight).sum(self.grid_dim) * convert_factor
+
+        self.diagnostic = ds
+        self.diagnostic = ds
+        utils.p_success(f'Archive.diagnostic generated with variables: {["NHAICE", "clim_NHAICE"]}')
+
+    def plot_nhaice(self, figsize=[10, 4], ncol=2, wspace=0.3, hspace=0.2, title=None,
+                        xlabel_dict=None, ax=None, print_settings=True, nhaice_ylim=(4, 16),
+                        prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], **plot_kws):
+        if ax is None:
+            fig = plt.figure(figsize=figsize)
+            ax = {}
+
+        _xlb_dict = {
+            'clim_NHAICE': 'Month',
+            'NHAICE': 'Time [yr]',
+        }
+        if xlabel_dict is not None:
+            _xlb_dict.update(xlabel_dict)
+
+        gs = gridspec.GridSpec(1, ncol)
+        gs.update(wspace=wspace, hspace=hspace)
+
+        i = 0
+        i_row, i_col = 0, 0
+        ds = self.diagnostic
+        for v in ['NHAICE', 'clim_NHAICE']:
+            if 'fig' in locals():
+                ax[v] = fig.add_subplot(gs[i_row, i_col])
+
+            if v == 'NHAICE':
+                ax[v].plot(ds[v].time, ds[v])
+                ax[v].set_title('NH Sea-ice Area')
+
+            elif v == 'clim_NHAICE':
+                ax[v].plot(ds[v].month, ds[v])
+                ax[v].set_xticks(list(range(1, 13)))
+                ax[v].set_title('Annual Cycle of NH Sea-ice Area')
+
+
+            ax[v].set_ylim(nhaice_ylim)
+            ax[v].set_xlabel(_xlb_dict[v])
+            ax[v].set_ylabel(r'NHAICE [10$^6$ km$^2$]')
             _plot_kws = {
                 'linewidth': 2,
             }
@@ -1468,3 +1527,547 @@ class Archives:
 #         ax[vn].legend(**_lgd_kws)
 
 #         return fig, ax
+
+class PPCase:
+    ''' Designed for postprocessed timeseries
+    '''
+    def __init__(self, root_dir, path_pattern='comp/proc/tseries/month_1/casename.mdl.h_str.vn.timespan.nc', settings_csv=None):
+        self.root_dir = root_dir
+        self.path_pattern = path_pattern
+        utils.p_header(f'>>> Case.root_dir: {self.root_dir}')
+        self.paths = glob.glob(
+            os.path.join(
+                self.root_dir,
+                self.path_pattern \
+                    .replace('comp', '**') \
+                    .replace('casename', '*') \
+                    .replace('mdl', '*') \
+                    .replace('h_str', '*') \
+                    .replace('vn', '*') \
+                    .replace('timespan', '*'),
+            )
+        )
+        self.vars_info = {}
+        for path in self.paths:
+            comp = path.split('/')[-5]
+            mdl = path.split('.')[-5]
+            h_str = path.split('.')[-4]
+            vn = path.split('.')[-3]
+            if vn not in self.vars_info:
+                self.vars_info[vn] = (comp, mdl, h_str)
+
+        utils.p_success(f'>>> PPCase.vars_info created')
+
+        self.ds = xr.Dataset()
+        self.diagnostics = xr.Dataset()
+        self.ds.attrs = {'components': []}
+        self.calc_log = {}
+
+        if settings_csv is not None:
+            settings_df = pd.read_csv(settings_csv, index_col=0)
+            self.settings_csv = settings_csv
+            self.settings_df = settings_df
+            utils.p_header(f'>>> PPCase.settings_csv: {self.settings_csv}')
+            utils.p_success(f'>>> PPCase.settings_df created')
+    
+    def load(self, vn, adjust_month=True, grid_weight_dict=None, lat_dict=None, lon_dict=None):
+        _grid_weight_dict = {
+            'atm': 'area',
+            'ocn': 'TAREA',
+            'ice': 'tarea',
+            'lnd': 'area',
+        }
+        if grid_weight_dict is not None:
+            _grid_weight_dict.update(grid_weight_dict)
+
+        _lat_dict = {
+            'atm': 'lat',
+            'ocn': 'TLAT',
+            'ice': 'TLAT',
+            'lnd': 'lat',
+        }
+        if lat_dict is not None:
+            _lat_dict.update(lat_dict)
+
+        _lon_dict = {
+            'atm': 'lon',
+            'ocn': 'TLONG',
+            'ice': 'TLONG',
+            'lnd': 'lon',
+        }
+        if lon_dict is not None:
+            _lon_dict.update(lon_dict)
+
+        if not isinstance(vn, (list, tuple)):
+            vn = [vn]
+
+        for v in vn:
+            if v in self.vars_info and v not in self.ds:
+                comp, mdl, h_str = self.vars_info[v]
+                paths = glob.glob(
+                    os.path.join(
+                        self.root_dir,
+                        self.path_pattern \
+                            .replace('comp', comp) \
+                            .replace('casename', '*') \
+                            .replace('mdl', mdl) \
+                            .replace('h_str', h_str) \
+                            .replace('vn', v) \
+                            .replace('timespan', '*'),
+                    )
+                )
+                ds =  xr.open_mfdataset(paths)
+                if adjust_month:
+                    ds['time'] = ds['time'].get_index('time') - datetime.timedelta(days=1)
+
+                if comp not in self.ds.attrs['components']:
+                    self.ds[f'gw_{comp}'] = ds[_grid_weight_dict[comp]][0].fillna(0)
+                    self.ds[f'lat_{comp}'] = ds[_lat_dict[comp]][0]
+                    self.ds[f'lon_{comp}'] = ds[_lon_dict[comp]][0]
+                    self.ds.attrs['components'].append(comp)
+
+                self.ds[v] = ds[v]
+                utils.p_success(f'>>> PPCase.ds["{v}"] created')
+        
+    def calc_diagnostics(self, vn):
+        if not isinstance(vn, (list, tuple)):
+            vn = [vn]
+
+        for v in vn:
+            if v not in self.diagnostics:
+                getattr(self, f'calc_{v}')()
+
+    def plot_diagnostics(self, vn=None, figsize=[20, 10], ncol=4, nrow=None, wspace=0.3, hspace=0.5, kws=None,
+                         print_settings=True, prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], title=None):
+        kws = {} if kws is None else kws
+
+        if vn is None:
+            vn = list(self.diagnostics)
+
+        if not isinstance(vn, (list, tuple)):
+            vn = [vn]
+
+        if nrow is None:
+            nrow = int(np.ceil(len(vn)/ncol))
+            
+        fig = plt.figure(figsize=figsize)
+        ax = {}
+        gs = gridspec.GridSpec(nrow, ncol)
+        gs.update(wspace=wspace, hspace=hspace)
+
+        for i, v in enumerate(vn):
+            if v not in kws:
+                kws[v] = {}
+
+            ax[v] = fig.add_subplot(gs[i])
+            getattr(self, f'plot_{v}')(ax=ax[v], **kws[v])
+
+        if hasattr(self, 'settings_df') and print_settings:
+            settings_info = ''
+            for name in prt_setting_list:
+                nm = f'atm: {name}'
+                settings_info += f'{name}: {self.settings_df.loc[nm].values[0].strip()}'
+                settings_info += ', '
+            settings_info = settings_info[:-2]
+
+        if 'settings_info' in locals():
+            if title is None:
+                title = settings_info
+            else:
+                title += f'\n{settings_info}'
+
+            fig.suptitle(title, y=0.95)
+
+    def calc_GMST(self):
+        vn = 'TS'
+        self.load(vn)
+        da = utils.monthly2annual(self.ds[vn])
+        da_gm = da.weighted(self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        self.diagnostics['GMST'] = da_gm.load() - 273.15  # K -> degC
+        utils.p_success(f'>>> PPCase.diagnostics["GMST"] created')
+
+    def plot_GMST(self, figsize=[4, 4], ylim=[13, 15], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMST [$^\circ$C]', color='tab:red', ref=14, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['GMST'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.axhline(ref, ls='--', color='tab:grey')
+        ax.set_title('Gobal Mean Surface Temperature')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_GMRESTOM(self):
+        vn = ['FSNT', 'FLNT']
+        self.load(vn)
+        da = utils.monthly2annual(self.ds[vn[0]] - self.ds[vn[1]])
+        da_gm = da.weighted(self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        self.diagnostics['GMRESTOM'] = da_gm.load()
+        utils.p_success(f'>>> PPCase.diagnostics["GMRESTOM"] created')
+
+    def plot_GMRESTOM(self, figsize=[4, 4], ylim=[-3, 3], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMRESTOM [W/m$^2$]', color='tab:blue', ref=0, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['GMRESTOM'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.axhline(ref, ls='--', color='tab:grey')
+        ax.set_title('Gobal Mean Net Radiative Flux')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_GMLWCF(self):
+        vn = 'LWCF'
+        self.load(vn)
+        da = utils.monthly2annual(self.ds[vn])
+        da_gm = da.weighted(self.ds.gw_atm).mean([d for d in self.ds[vn].dims if d!='time'])
+        self.diagnostics['GMLWCF'] = da_gm.load()
+        utils.p_success(f'>>> PPCase.diagnostics["GMLWCF"] created')
+
+    def plot_GMLWCF(self, figsize=[4, 4], ylim=[23, 27], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMLWCF [W/m$^2$]', color='tab:green', ref=25, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['GMLWCF'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.axhline(ref, ls='--', color='tab:grey')
+        ax.set_title('Gobal Mean Longwave Cloud Forcing')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_GMSWCF(self):
+        vn = 'SWCF'
+        self.load(vn)
+        da = utils.monthly2annual(self.ds[vn])
+        da_gm = da.weighted(self.ds.gw_atm).mean([d for d in self.ds[vn].dims if d!='time'])
+        self.diagnostics['GMSWCF'] = da_gm.load()
+        utils.p_success(f'>>> PPCase.diagnostics["GMSWCF"] created')
+
+    def plot_GMSWCF(self, figsize=[4, 4], ylim=[-53, -45], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMSWCF [W/m$^2$]', color='tab:orange', ref=-47, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['GMSWCF'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.axhline(ref, ls='--', color='tab:grey')
+        ax.set_title('Gobal Mean Shortwave Cloud Forcing')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_NHICEFRAC(self):
+        vn = 'ICEFRAC'
+        self.load(vn)
+        convert_factor = 4*np.pi*6.37122**2 / self.ds.gw_atm.sum().values  # 1e6 km^2
+
+        da = utils.monthly2annual(self.ds[vn])
+        da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
+        self.diagnostics['NHICEFRAC'] = da_nhm.load() * convert_factor
+        utils.p_success(f'>>> PPCase.diagnostics["NHICEFRAC"] created')
+
+        da = self.ds[vn].groupby('time.month').mean()
+        da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
+        self.diagnostics['NHICEFRAC_clim'] = da_nhm.load() * convert_factor
+        utils.p_success(f'>>> PPCase.diagnostics["NHICEFRAC_clim"] created')
+
+                
+    def plot_NHICEFRAC(self, figsize=[4, 4], ylim=[4, 16], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'NHICEFRAC [10$^6$ km$^2$]', color='tab:cyan', ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['NHICEFRAC'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.set_title('NH Sea-ice Area')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def plot_NHICEFRAC_clim(self, figsize=[4, 4], ylim=[4, 16], xlabel='Month', ylabel=r'NHICEFRAC [10$^6$ km$^2$]', color='tab:cyan', ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['NHICEFRAC_clim'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xticks(list(range(1, 13)))
+        ax.set_title('Annual Cycle of NH Sea-ice Area')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_GMSSS(self):
+        vn = 'SALT'
+        self.load(vn)
+        da = utils.monthly2annual(self.ds[vn].isel(z_t=0))
+        da_gm = da.weighted(self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
+        self.diagnostics['GMSSS'] = da_gm.load()
+        utils.p_success(f'>>> PPCase.diagnostics["GMSSS"] created')
+
+    def plot_GMSSS(self, figsize=[4, 4], ylim=[13, 15], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'Salinity [g/kg]', color='tab:orange', ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['GMSSS'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        # ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.set_title('Gobal Mean Sea Surface Salinity')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_AMOC(self, timeslice=slice(-50, None)):
+        vn = 'MOC'
+        self.load(vn)
+        self.calc_log['calc_AMOC'] = {'timeslice': timeslice}
+        da = utils.monthly2annual(self.ds[vn])
+        da['moc_z'] = da['moc_z'] / 1e5  # cm -> km
+        da['moc_z'].attrs['units'] = 'km'
+        da.load()
+
+        self.diagnostics['AMOC'] = da.isel(transport_reg=1, moc_comp=0).sel(moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90)).max(('moc_z', 'lat_aux_grid'))
+        self.diagnostics['AMOC_yz'] = da.isel(transport_reg=1, moc_comp=0, time=timeslice).mean('time').where(da.lat_aux_grid > -35)
+        self.diagnostics = self.diagnostics.drop_vars('moc_components')
+        utils.p_success(f'>>> PPCase.diagnostics["AMOC"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["AMOC_yz"] created')
+
+    def plot_AMOC(self, figsize=[4, 4], ylim=[15, 30], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'AMOC [Sv]', color='tab:blue', ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['AMOC'].plot(ax=ax, color=color)
+        ax.set_title(None)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 6))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.set_title('Atlantic Meridional Overturning Circulation')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def plot_AMOC_yz(self, figsize=[4, 4], xlim=[-35, 90], xlabel='Latitude', ylabel='Depth [km]', amoc_levels=np.linspace(-24, 24, 25), ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        da = self.diagnostics['AMOC_yz']
+        im = ax.contourf(da.lat_aux_grid, da.moc_z, da, cmap='RdBu_r', extend='both', levels=amoc_levels)
+        ax.set_xticks([-30, 0, 30, 60, 90])
+        ax.set_xlim(xlim)
+        ax.set_title(f"AMOC_yz (last {np.abs(self.calc_log['calc_AMOC']['timeslice'].start)} yrs)")
+        ax.invert_yaxis()
+        ax.set_yticks([0, 2, 4])
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        cbar = plt.colorbar(im, extend='both', shrink=0.9, ax=ax)
+        cbar.ax.set_title('[Sv]')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_ENSO(self):
+        vn = 'TS'
+        self.load(vn)
+        da = utils.monthly2annual(self.ds[vn])
+
+        da_avg = da.where((self.ds.lat_atm>=-5)&(self.ds.lat_atm<=5)&(self.ds.lon_atm>=np.mod(-170, 360))&(self.ds.lon_atm>=np.mod(-120, 360))).weighted(
+            self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        self.diagnostics['ENSO'] = da_avg.load() - 273.15
+        utils.p_success(f'>>> PPCase.diagnostics["ENSO"] created')
+
+        # da_avg = da.where((self.ds.lat_atm>=-10)&(self.ds.lat_atm<=10)&(self.ds.lon_atm>=np.mod(-90, 360))&(self.ds.lon_atm>=np.mod(-80, 360))).weighted(
+        #     self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        # self.diagnostics['NINO1+2'] = da_avg.load()
+        # utils.p_success(f'>>> PPCase.diagnostics["NINO1+2"] created')
+
+        # da_avg = da.where((self.ds.lat_atm>=-5)&(self.ds.lat_atm<=5)&(self.ds.lon_atm>=np.mod(-150, 360))&(self.ds.lon_atm>=np.mod(-90, 360))).weighted(
+        #     self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        # self.diagnostics['NINO3'] = da_avg.load()
+        # utils.p_success(f'>>> PPCase.diagnostics["NINO3"] created')
+
+        # da_avg = da.where((self.ds.lat_atm>=-5)&(self.ds.lat_atm<=5)&(self.ds.lon_atm>=np.mod(160, 360))&(self.ds.lon_atm>=np.mod(-150, 360))).weighted(
+        #     self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        # self.diagnostics['NINO4'] = da_avg.load()
+        # utils.p_success(f'>>> PPCase.diagnostics["NINO4"] created')
+
+    def plot_ENSO(self, figsize=[4, 4], ylim=[20, 30], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'NINO3.4 [$^\circ$C]', color='tab:red', ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['ENSO'].plot(ax=ax, color=color)
+        ax.set_title(None)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.set_title('ENSO')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+
+# class PPCase:
+#     ''' Designed for postprocessed timeseries
+#     '''
+#     def __init__(self, root_dir, vn=['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF', 'ICEFRAC', 'MOC'],
+#                  vn_paths=None, grid_weight_dict=None, lat_dict=None, settings_csv=None, adjust_month=True):
+#         self.root_dir = root_dir
+#         utils.p_header(f'>>> Case.root_dir: {self.root_dir}')
+
+#         if settings_csv is not None:
+#             settings_df = pd.read_csv(settings_csv, index_col=0)
+#             self.settings_csv = settings_csv
+#             self.settings_df = settings_df
+#             utils.p_header(f'>>> PPCase.settings_csv: {self.settings_csv}')
+#             utils.p_success(f'>>> PPCase.settings_df created')
+
+#         # settings
+#         self.vn_paths = {}
+#         for v in ['TS', 'FSNT', 'FLNT', 'LWCF', 'SWCF', 'ICEFRAC']:
+#             self.vn_paths[v] = f'atm/proc/tseries/month_1/*cam.h0.{v}.*.nc'
+
+#         for v in ['MOC']:
+#             self.vn_paths[v] = f'ocn/proc/tseries/month_1/*pop.h.{v}.*.nc'
+        
+#         if vn_paths is not None:
+#             self.vn_paths.update(vn_paths)
+
+#         self.vn_component = {}
+#         for v, p in self.vn_paths.items():
+#             self.vn_component[v] = p.split('/')[0]
+
+#         # load variables
+#         if type(vn) is not list: vn = [vn]
+#         self.vn = vn
+#         utils.p_header(f'>>> Loading variables: {self.vn}')
+#         self.ds = {}
+#         for v in tqdm(self.vn):
+#             comp = self.vn_component[v]
+#             path = os.path.join(self.root_dir, self.vn_paths[v])
+#             ds =  xr.open_mfdataset(path)
+#             if adjust_month:
+#                 ds['time'] = ds['time'].get_index('time') - datetime.timedelta(days=1)
+
+#             if comp not in self.ds:
+#                 self.ds[comp] = ds.copy()
+#             else:
+#                 self.ds[comp][v] = ds[v]
+
+#         for comp in self.ds.keys():
+#             utils.p_success(f'>>> Case.ds["{comp}"] created')
+
+#         # set grid weight
+#         grid_weight = {
+#             'atm': 'area',
+#             'ocn': 'TAREA',
+#             'ice': 'tarea',
+#             'lnd': 'area',
+#         }
+#         if grid_weight_dict is not None:
+#             grid_weight.update(grid_weight_dict)
+
+#         self.grid_weight = {}
+#         for comp in self.ds.keys():
+#             self.grid_weight[comp] = self.ds[comp][grid_weight[comp]][0].fillna(0)
+#             utils.p_success(f'>>> Case.grid_weight["{comp}"] created')
+
+#         # set lat
+#         lat = {
+#             'atm': 'lat',
+#             'ocn': 'TLAT',
+#             'ice': 'TLAT',
+#             'lnd': 'lat',
+#         }
+#         if lat_dict is not None:
+#             lat.update(lat_dict)
+
+#         self.lat = {}
+#         for comp in self.ds.keys():
+#             self.lat[comp] = self.ds[comp][lat[comp]]
+#             utils.p_success(f'>>> Case.lat["{comp}"] created')
+
+#     def copy(self):
+#         return copy.deepcopy(self)
+
+#     def ann(self, vn=None):
+#         new = self.copy()
+#         for comp in self.ds.keys():
+#             vn_list = list(set(self.ds[comp].variables).intersection(set(self.vn)))
+#             new.ds[comp] = utils.monthly2annual(self.ds[comp][vn_list])
+#         return new
+
+
+#     def gm(self, vn=None):
+#         new = self.copy()
+#         for comp in self.ds.keys():
+#             new.ds[comp] = self.ds[comp].weighted(self.grid_weight[comp]).mean([d for d in self.ds[comp].dims if d!='time'])
+#         return new
+
+#     def nhm(self, vn=None):
+#         new = self.copy()
+#         for comp in self.ds.keys():
+#             new.ds[comp] = self.ds[comp].where(self.lat[comp]>0).weighted(self.grid_weight[comp]).mean([d for d in self.ds[comp].dims if d!='time'])
+#         return new
+
+#     def shm(self, vn=None):
+#         new = self.copy()
+#         for comp in self.ds.keys():
+#             new.ds[comp] = self.ds[comp].where(self.lat[comp]<0).weighted(self.grid_weight[comp]).mean([d for d in self.ds[comp].dims if d!='time'])
+#         return new

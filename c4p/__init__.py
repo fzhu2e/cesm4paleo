@@ -1,6 +1,6 @@
 from .case import PaleoSetup
 from .case import CESMCase
-from .pp import Archive, Archives
+from .pp import Archive, Archives, PPCase
 from .field import FVField, SEField
 from .visual import set_style
 

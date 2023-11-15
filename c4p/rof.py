@@ -198,7 +198,10 @@ class ROF:
         fdst = os.path.join(self.grids_dirpath, fdst_fname)
         utils.exec_script(fpath, args=f'-fsrc {fsrc} -nsrc r19_nomask -fdst {fdst} -ndst r1x1 -map aave')
 
-    def gen_rmap(self, ocn_grid, rof_grid_name, res='1deg', qsub=True, rdirc_ascii=None, **qsub_kws):
+    def gen_rmap(self, ocn_grid, rdirc_grid=None, rof_grid_name=None, res='1deg', qsub=True, rdirc_ascii=None, **qsub_kws):
+        if rdirc_grid is not None:
+            rof_grid_name, rdirc_ascii = list(rdirc_grid.keys())[0], list(rdirc_grid.values())[0]
+
         rdirc_ascii = f'fort.13_{self.casename}' if rdirc_ascii is None else rdirc_ascii
         rof2ocn_exe = os.path.join(cwd, f'./src/rof/runoff_map_{res}')
         utils.p_header(f'>>> Creating ROF2OCN_RMAP file')

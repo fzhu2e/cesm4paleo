@@ -231,7 +231,6 @@ def jupyter_server(port=None, qsub=False, name='JupyterLab', queue=None, select=
 
 def monthly2annual(ds):
     month_length = ds.time.dt.days_in_month
-    wgts_mon = month_length.groupby(
-        'time.year') / month_length.groupby('time.year').mean()
+    wgts_mon = month_length.groupby('time.year') / month_length.groupby('time.year').mean()
     ds_ann = (ds * wgts_mon).groupby('time.year').mean('time')
     return ds_ann.rename({'year':'time'})
