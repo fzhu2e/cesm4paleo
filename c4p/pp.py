@@ -110,9 +110,9 @@ ncrcat -v {v} {paths} {os.path.abspath(output_fpath)}
             if adjust_month:
                 da['time'] = da['time'].get_index('time') - datetime.timedelta(days=1)
             if timeslice is not None:
-                da_clim = da.isel(time=timeslice).groupby('time.month').mean()
+                da_clim = da.isel(time=timeslice).groupby('time.month').mean('time')
             else:
-                da_clim = da.groupby('time.month').mean()
+                da_clim = da.groupby('time.month').mean('time')
             ds[v] = da_clim
         return ds
 
@@ -1622,8 +1622,13 @@ class PPCase:
 
                 if comp not in self.ds.attrs['components']:
                     self.ds[f'gw_{comp}'] = ds[_grid_weight_dict[comp]][0].fillna(0)
-                    self.ds[f'lat_{comp}'] = ds[_lat_dict[comp]][0]
-                    self.ds[f'lon_{comp}'] = ds[_lon_dict[comp]][0]
+                    if comp == 'atm':
+                        self.ds[f'lat_{comp}'] = ds[_lat_dict[comp]][0]
+                        self.ds[f'lon_{comp}'] = ds[_lon_dict[comp]][0]
+                    else:
+                        self.ds[f'lat_{comp}'] = ds[_lat_dict[comp]]
+                        self.ds[f'lon_{comp}'] = ds[_lon_dict[comp]]
+
                     self.ds.attrs['components'].append(comp)
 
                 self.ds[v] = ds[v]
@@ -1681,12 +1686,14 @@ class PPCase:
     def calc_GMST(self):
         vn = 'TS'
         self.load(vn)
+        self.ds[vn].load()
         da = utils.monthly2annual(self.ds[vn])
         da_gm = da.weighted(self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
-        self.diagnostics['GMST'] = da_gm.load() - 273.15  # K -> degC
+        self.diagnostics['GMST'] = da_gm - 273.15  # K -> degC
         utils.p_success(f'>>> PPCase.diagnostics["GMST"] created')
 
-    def plot_GMST(self, figsize=[4, 4], ylim=[13, 15], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMST [$^\circ$C]', color='tab:red', ref=14, ax=None):
+    def plot_GMST(self, figsize=[4, 4], ylim=[13, 15], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMST [$^\circ$C]', color='tab:red',
+                  ref=14, ax=None, stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1699,6 +1706,15 @@ class PPCase:
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.axhline(ref, ls='--', color='tab:grey')
         ax.set_title('Gobal Mean Surface Temperature')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["GMST"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1708,12 +1724,14 @@ class PPCase:
     def calc_GMRESTOM(self):
         vn = ['FSNT', 'FLNT']
         self.load(vn)
+        self.ds[vn].load()
         da = utils.monthly2annual(self.ds[vn[0]] - self.ds[vn[1]])
         da_gm = da.weighted(self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
-        self.diagnostics['GMRESTOM'] = da_gm.load()
+        self.diagnostics['GMRESTOM'] = da_gm
         utils.p_success(f'>>> PPCase.diagnostics["GMRESTOM"] created')
 
-    def plot_GMRESTOM(self, figsize=[4, 4], ylim=[-3, 3], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMRESTOM [W/m$^2$]', color='tab:blue', ref=0, ax=None):
+    def plot_GMRESTOM(self, figsize=[4, 4], ylim=[-3, 3], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMRESTOM [W/m$^2$]', color='tab:blue',
+                      ref=0, ax=None, stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1726,6 +1744,15 @@ class PPCase:
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.axhline(ref, ls='--', color='tab:grey')
         ax.set_title('Gobal Mean Net Radiative Flux')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["GMRESTOM"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1735,12 +1762,14 @@ class PPCase:
     def calc_GMLWCF(self):
         vn = 'LWCF'
         self.load(vn)
+        self.ds[vn].load()
         da = utils.monthly2annual(self.ds[vn])
         da_gm = da.weighted(self.ds.gw_atm).mean([d for d in self.ds[vn].dims if d!='time'])
-        self.diagnostics['GMLWCF'] = da_gm.load()
+        self.diagnostics['GMLWCF'] = da_gm
         utils.p_success(f'>>> PPCase.diagnostics["GMLWCF"] created')
 
-    def plot_GMLWCF(self, figsize=[4, 4], ylim=[23, 27], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMLWCF [W/m$^2$]', color='tab:green', ref=25, ax=None):
+    def plot_GMLWCF(self, figsize=[4, 4], ylim=[23, 27], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMLWCF [W/m$^2$]', color='tab:green',
+                    ref=25, ax=None, stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1753,6 +1782,15 @@ class PPCase:
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.axhline(ref, ls='--', color='tab:grey')
         ax.set_title('Gobal Mean Longwave Cloud Forcing')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["GMLWCF"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1762,12 +1800,14 @@ class PPCase:
     def calc_GMSWCF(self):
         vn = 'SWCF'
         self.load(vn)
+        self.ds[vn].load()
         da = utils.monthly2annual(self.ds[vn])
         da_gm = da.weighted(self.ds.gw_atm).mean([d for d in self.ds[vn].dims if d!='time'])
-        self.diagnostics['GMSWCF'] = da_gm.load()
+        self.diagnostics['GMSWCF'] = da_gm
         utils.p_success(f'>>> PPCase.diagnostics["GMSWCF"] created')
 
-    def plot_GMSWCF(self, figsize=[4, 4], ylim=[-53, -45], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMSWCF [W/m$^2$]', color='tab:orange', ref=-47, ax=None):
+    def plot_GMSWCF(self, figsize=[4, 4], ylim=[-53, -45], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'GMSWCF [W/m$^2$]', color='tab:orange',
+                    ref=-47, ax=None, stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1780,6 +1820,15 @@ class PPCase:
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.axhline(ref, ls='--', color='tab:grey')
         ax.set_title('Gobal Mean Shortwave Cloud Forcing')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["GMSWCF"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1789,20 +1838,22 @@ class PPCase:
     def calc_NHICEFRAC(self):
         vn = 'ICEFRAC'
         self.load(vn)
+        self.ds[vn].load()
         convert_factor = 4*np.pi*6.37122**2 / self.ds.gw_atm.sum().values  # 1e6 km^2
 
         da = utils.monthly2annual(self.ds[vn])
         da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
-        self.diagnostics['NHICEFRAC'] = da_nhm.load() * convert_factor
+        self.diagnostics['NHICEFRAC'] = da_nhm * convert_factor
         utils.p_success(f'>>> PPCase.diagnostics["NHICEFRAC"] created')
 
-        da = self.ds[vn].groupby('time.month').mean()
+        da = self.ds[vn].groupby('time.month').mean('time')
         da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
-        self.diagnostics['NHICEFRAC_clim'] = da_nhm.load() * convert_factor
+        self.diagnostics['NHICEFRAC_clim'] = da_nhm * convert_factor
         utils.p_success(f'>>> PPCase.diagnostics["NHICEFRAC_clim"] created')
 
                 
-    def plot_NHICEFRAC(self, figsize=[4, 4], ylim=[4, 16], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'NHICEFRAC [10$^6$ km$^2$]', color='tab:cyan', ax=None):
+    def plot_NHICEFRAC(self, figsize=[4, 4], ylim=[4, 16], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'NHICEFRAC [10$^6$ km$^2$]', color='tab:cyan', ax=None,
+                       stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1814,6 +1865,15 @@ class PPCase:
         ax.set_xlim(xlim)
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.set_title('NH Sea-ice Area')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["NHICEFRAC"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1829,6 +1889,7 @@ class PPCase:
         ax.set_ylabel(ylabel)
         ax.set_ylim(ylim)
         ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(1, 12)
         ax.set_xticks(list(range(1, 13)))
         ax.set_title('Annual Cycle of NH Sea-ice Area')
 
@@ -1838,25 +1899,73 @@ class PPCase:
             return ax
 
     def calc_GMSSS(self):
-        vn = 'SALT'
+        vn = 'SSS'
         self.load(vn)
-        da = utils.monthly2annual(self.ds[vn].isel(z_t=0))
+        self.ds[vn].load()
+        da = utils.monthly2annual(self.ds[vn])
         da_gm = da.weighted(self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
-        self.diagnostics['GMSSS'] = da_gm.load()
+        self.diagnostics['GMSSS'] = da_gm
         utils.p_success(f'>>> PPCase.diagnostics["GMSSS"] created')
 
-    def plot_GMSSS(self, figsize=[4, 4], ylim=[13, 15], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'Salinity [g/kg]', color='tab:orange', ax=None):
+    def plot_GMSSS(self, figsize=[4, 4], ylim=[34, 35], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'Salinity [g/kg]', color='tab:orange', ax=None,
+                   stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
         self.diagnostics['GMSSS'].plot(ax=ax, color=color)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
-        # ax.set_ylim(ylim)
+        ax.set_ylim(ylim)
         ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
         ax.set_xlim(xlim)
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.set_title('Gobal Mean Sea Surface Salinity')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["GMSSS"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+
+    def calc_GMSSd18O(self):
+        vn = 'SSR18O'
+        self.load(vn)
+        self.ds[vn].load()
+        da = utils.monthly2annual((self.ds[vn]-1)*1e3)
+        da_gm = da.weighted(self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
+        self.diagnostics['GMSSd18O'] = da_gm
+        utils.p_success(f'>>> PPCase.diagnostics["GMSSd18O"] created')
+
+    def plot_GMSSd18O(self, figsize=[4, 4], ylim=[-0.1, 0.1], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'd18Osw [‰]', color='tab:orange', ax=None,
+                   stat_period=-50):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        self.diagnostics['GMSSd18O'].plot(ax=ax, color=color)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
+        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        ax.set_xlim(xlim)
+        ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
+        ax.set_title('Gobal Mean Sea Surface d18O')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["GMSSd18O"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1866,11 +1975,11 @@ class PPCase:
     def calc_AMOC(self, timeslice=slice(-50, None)):
         vn = 'MOC'
         self.load(vn)
+        self.ds[vn].load()
         self.calc_log['calc_AMOC'] = {'timeslice': timeslice}
         da = utils.monthly2annual(self.ds[vn])
         da['moc_z'] = da['moc_z'] / 1e5  # cm -> km
         da['moc_z'].attrs['units'] = 'km'
-        da.load()
 
         self.diagnostics['AMOC'] = da.isel(transport_reg=1, moc_comp=0).sel(moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90)).max(('moc_z', 'lat_aux_grid'))
         self.diagnostics['AMOC_yz'] = da.isel(transport_reg=1, moc_comp=0, time=timeslice).mean('time').where(da.lat_aux_grid > -35)
@@ -1878,7 +1987,7 @@ class PPCase:
         utils.p_success(f'>>> PPCase.diagnostics["AMOC"] created')
         utils.p_success(f'>>> PPCase.diagnostics["AMOC_yz"] created')
 
-    def plot_AMOC(self, figsize=[4, 4], ylim=[15, 30], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'AMOC [Sv]', color='tab:blue', ax=None):
+    def plot_AMOC(self, figsize=[4, 4], ylim=[15, 30], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'AMOC [Sv]', color='tab:blue', ax=None, stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1891,6 +2000,15 @@ class PPCase:
         ax.set_xlim(xlim)
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.set_title('Atlantic Meridional Overturning Circulation')
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["AMOC"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
@@ -1919,31 +2037,35 @@ class PPCase:
             return ax
 
     def calc_ENSO(self):
-        vn = 'TS'
+        vn = 'SST'
         self.load(vn)
-        da = utils.monthly2annual(self.ds[vn])
+        self.ds[vn].load()
+        da_clim = self.ds[vn].groupby('time.month').mean('time')
+        da_anom = self.ds[vn].groupby('time.month') - da_clim
+        da = utils.monthly2annual(da_anom)
+        # da = utils.monthly2annual(self.ds[vn])
 
-        da_avg = da.where((self.ds.lat_atm>=-5)&(self.ds.lat_atm<=5)&(self.ds.lon_atm>=np.mod(-170, 360))&(self.ds.lon_atm>=np.mod(-120, 360))).weighted(
-            self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
-        self.diagnostics['ENSO'] = da_avg.load() - 273.15
+        da_avg = da.where((self.ds.lat_ocn>=-5)&(self.ds.lat_ocn<=5)&(self.ds.lon_ocn>=np.mod(-170, 360))&(self.ds.lon_ocn>=np.mod(-120, 360))).weighted(
+            self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
+        self.diagnostics['ENSO'] = da_avg
         utils.p_success(f'>>> PPCase.diagnostics["ENSO"] created')
 
-        # da_avg = da.where((self.ds.lat_atm>=-10)&(self.ds.lat_atm<=10)&(self.ds.lon_atm>=np.mod(-90, 360))&(self.ds.lon_atm>=np.mod(-80, 360))).weighted(
-        #     self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        # da_avg = da.where((self.ds.lat_ocn>=-10)&(self.ds.lat_ocn<=10)&(self.ds.lon_ocn>=np.mod(-90, 360))&(self.ds.lon_ocn>=np.mod(-80, 360))).weighted(
+        #     self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
         # self.diagnostics['NINO1+2'] = da_avg.load()
         # utils.p_success(f'>>> PPCase.diagnostics["NINO1+2"] created')
 
-        # da_avg = da.where((self.ds.lat_atm>=-5)&(self.ds.lat_atm<=5)&(self.ds.lon_atm>=np.mod(-150, 360))&(self.ds.lon_atm>=np.mod(-90, 360))).weighted(
-        #     self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        # da_avg = da.where((self.ds.lat_ocn>=-5)&(self.ds.lat_ocn<=5)&(self.ds.lon_ocn>=np.mod(-150, 360))&(self.ds.lon_ocn>=np.mod(-90, 360))).weighted(
+        #     self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
         # self.diagnostics['NINO3'] = da_avg.load()
         # utils.p_success(f'>>> PPCase.diagnostics["NINO3"] created')
 
-        # da_avg = da.where((self.ds.lat_atm>=-5)&(self.ds.lat_atm<=5)&(self.ds.lon_atm>=np.mod(160, 360))&(self.ds.lon_atm>=np.mod(-150, 360))).weighted(
-        #     self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))
+        # da_avg = da.where((self.ds.lat_ocn>=-5)&(self.ds.lat_ocn<=5)&(self.ds.lon_ocn>=np.mod(160, 360))&(self.ds.lon_ocn>=np.mod(-150, 360))).weighted(
+        #     self.ds.gw_ocn).mean(list(self.ds.gw_ocn.dims))
         # self.diagnostics['NINO4'] = da_avg.load()
         # utils.p_success(f'>>> PPCase.diagnostics["NINO4"] created')
 
-    def plot_ENSO(self, figsize=[4, 4], ylim=[20, 30], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'NINO3.4 [$^\circ$C]', color='tab:red', ax=None):
+    def plot_ENSO(self, figsize=[4, 4], ylim=[-2, 2], xlim=[0, 500], xlabel='Time [yr]', ylabel=r'NINO3.4 [$^\circ$C]', color='tab:red', ax=None, stat_period=-50):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
 
@@ -1952,10 +2074,28 @@ class PPCase:
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.set_ylim(ylim)
-        ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
+        # ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
         ax.set_xlim(xlim)
         ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
         ax.set_title('ENSO')
+        # ax.text(
+        #     1, 0.90,
+        #     f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["ENSO"][stat_period:].values):.2f}',
+        #     verticalalignment='bottom',
+        #     horizontalalignment='right',
+        #     transform=ax.transAxes,
+        #     color=color,
+        #     fontsize=15,
+        # )
+        ax.text(
+            1, 0.90,
+            f'last {np.abs(stat_period)}-yr std: {np.std(self.diagnostics["ENSO"][stat_period:].values):.2f}',
+            verticalalignment='bottom',
+            horizontalalignment='right',
+            transform=ax.transAxes,
+            color=color,
+            fontsize=15,
+        )
 
         if 'fig' in locals():
             return fig, ax
