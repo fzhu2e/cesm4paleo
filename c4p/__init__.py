@@ -1,8 +1,8 @@
 from .case import PaleoSetup
 from .case import CESMCase
 from .pp import Archive, Archives, PPCase
-from .field import FVField, SEField
 from .visual import set_style
+from .rotation import Rotation
 
 set_style(style='journal', font_scale=1.2)
 
