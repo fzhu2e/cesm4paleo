@@ -1,4 +1,5 @@
 import os
+import pickle
 import xarray as xr
 import numpy as np
 import pandas as pd
@@ -121,3 +122,8 @@ class Rotation:
             ax[1].set_title('After Rotation')
 
         fig.tight_layout()
+
+    def save(self, path):
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
+        

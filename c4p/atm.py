@@ -60,3 +60,8 @@ class ATM:
         utils.p_header('>>> Customize aerosol settings ...')
         # TODO
         # Step 32
+
+    def interpic(self, template, input_field, output_field, exe_path=os.path.join(cwd, './src/interpic/interpic_atm')):
+        utils.p_header('>>> Interpolate the input atmosphere IC based on the given template ...')
+        fpath_exe = utils.copy(exe_path, 'interpic_atm')
+        utils.exec_script(fpath_exe, args=f'-t {template} {input_field} {output_field}')
