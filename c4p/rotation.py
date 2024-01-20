@@ -82,8 +82,8 @@ class Rotation:
         utils.p_success('>>> Rotation.df created')
         utils.p_success('>>> Rotation.varnames created')
 
-    def regrid(self):
-        regrid_res = griddata((self.df['re_lat'], self.df['re_lon']), self.df[self.varnames], (self.lats.data, self.lons.data), method='linear').reshape((len(self.ds[self.lat_dn]), len(self.ds[self.lon_dn]), -1))
+    def regrid(self, method='linear'):
+        regrid_res = griddata((self.df['re_lat'], self.df['re_lon']), self.df[self.varnames], (self.lats.data, self.lons.data), method=method).reshape((len(self.ds[self.lat_dn]), len(self.ds[self.lon_dn]), -1))
         self.regrid_res = np.moveaxis(regrid_res, -1, 0)
         utils.p_success('>>> Rotation.regrid_res created')
 

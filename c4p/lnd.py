@@ -173,10 +173,12 @@ class LND:
         )
         utils.exec_script(fpath_exe, args=f'< {fpath_namelist}')
 
-    def interpic(self, template, input_field, exe_path=os.path.join(cwd, './src/interpic/interpic_lnd')):
+    def interpic(self, template, input_field, output_fname=None, exe_path=os.path.join(cwd, './src/interpic/interpic_lnd')):
         utils.p_header('>>> Interpolate the input land surface data based on the given template ...')
         fpath_exe = utils.copy(exe_path, 'interpic_lnd')
-        utils.exec_script(fpath_exe, args=f'-i {input_field} -o {template}')
+        if output_fname is None: output_fname = os.path.basename(input_field)
+        fpath_out = utils.copy(template, output_fname)
+        utils.exec_script(fpath_exe, args=f'-i {input_field} -o {fpath_out}')
 
     def clean(self):
         utils.run_shell(f'rm -rf PET*.Log *paleo_mkraw* Makefile pathnames.sed mksrf_org.nc mksrf_soi.nc core mkscripgrid.ncl create-topo_*deg.ncl pbs_mapping_lnd2atm.zsh mapping_lnd2atm.*')

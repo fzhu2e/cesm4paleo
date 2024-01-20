@@ -2,6 +2,7 @@
 import os
 import copy
 import glob
+import gzip
 import xarray as xr
 import numpy as np
 import pandas as pd
@@ -16,7 +17,10 @@ from . import utils
 class Archive:
     
     def __init__(self, paths, output_dir='./output', load_num=None, settings_csv=None):
-        self.paths = paths[:load_num]
+        if load_num < 0:
+            self.paths = self.paths[load_num:]
+        else:
+            self.paths = self.paths[:load_num]
         utils.p_header(f'>>> {len(self.paths)} Archive.paths:')
         print(f'Start: {os.path.basename(self.paths[0])}')
         print(f'End: {os.path.basename(self.paths[-1])}')
@@ -1634,13 +1638,16 @@ class PPCase:
                 self.ds[v] = ds[v]
                 utils.p_success(f'>>> PPCase.ds["{v}"] created')
         
-    def calc_diagnostics(self, vn):
+    def calc_diagnostics(self, vn, kws=None):
+        kws = {} if kws is None else kws
         if not isinstance(vn, (list, tuple)):
             vn = [vn]
 
         for v in vn:
             if v not in self.diagnostics:
-                getattr(self, f'calc_{v}')()
+                if v not in kws:
+                    kws[v] = {}
+                getattr(self, f'calc_{v}')(**kws[v])
 
     def plot_diagnostics(self, vn=None, figsize=[20, 10], ncol=4, nrow=None, wspace=0.3, hspace=0.5, kws=None,
                          print_settings=True, prt_setting_list=['cldfrc_rhminl', 'micro_mg_dcs'], title=None):
@@ -1972,7 +1979,7 @@ class PPCase:
         else:
             return ax
 
-    def calc_AMOC(self, timeslice=slice(-50, None)):
+    def calc_AMOC(self, timeslice=slice(-50, None), transport_reg=1):
         vn = 'MOC'
         self.load(vn)
         self.ds[vn].load()
@@ -1981,8 +1988,8 @@ class PPCase:
         da['moc_z'] = da['moc_z'] / 1e5  # cm -> km
         da['moc_z'].attrs['units'] = 'km'
 
-        self.diagnostics['AMOC'] = da.isel(transport_reg=1, moc_comp=0).sel(moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90)).max(('moc_z', 'lat_aux_grid'))
-        self.diagnostics['AMOC_yz'] = da.isel(transport_reg=1, moc_comp=0, time=timeslice).mean('time').where(da.lat_aux_grid > -35)
+        self.diagnostics['AMOC'] = da.isel(transport_reg=transport_reg, moc_comp=0).sel(moc_z=slice(0.5, None), lat_aux_grid=slice(28, 90)).max(('moc_z', 'lat_aux_grid'))
+        self.diagnostics['AMOC_yz'] = da.isel(transport_reg=transport_reg, moc_comp=0, time=timeslice).mean('time')
         self.diagnostics = self.diagnostics.drop_vars('moc_components')
         utils.p_success(f'>>> PPCase.diagnostics["AMOC"] created')
         utils.p_success(f'>>> PPCase.diagnostics["AMOC_yz"] created')
@@ -2211,3 +2218,116 @@ class PPCase:
 #         for comp in self.ds.keys():
 #             new.ds[comp] = self.ds[comp].where(self.lat[comp]<0).weighted(self.grid_weight[comp]).mean([d for d in self.ds[comp].dims if d!='time'])
 #         return new
+
+class Logs:
+    def __init__(self, dirpath, comp='ocn', load_num=None):
+        self.dirpath = dirpath
+        self.paths = sorted(glob.glob(os.path.join(dirpath, f'{comp}.log.*.gz')))
+        if load_num is not None:
+            if load_num < 0:
+                self.paths = self.paths[load_num:]
+            else:
+                self.paths = self.paths[:load_num]
+
+        utils.p_header(f'>>> Logs.dirpath: {self.dirpath}')
+        utils.p_header(f'>>> {len(self.paths)} Logs.paths:')
+        print(f'Start: {os.path.basename(self.paths[0])}')
+        print(f'End: {os.path.basename(self.paths[-1])}')
+
+    def get_vars(self, vn=[
+                    'UVEL', 'UVEL2', 'VVEL', 'VVEL2', 'TEMP', 'dTEMP_POS_2D', 'dTEMP_NEG_2D', 'SALT', 'RHO', 'RHO_VINT',
+                    'RESID_T', 'RESID_S', 'SU', 'SV', 'SSH', 'SSH2', 'SHF', 'SHF_QSW', 'SFWF', 'SFWF_WRST', 'TAUX', 'TAUX2', 'TAUY',
+                    'TAUY2', 'FW', 'TFW_T', 'TFW_S', 'EVAP_F', 'PREC_F', 'SNOW_F', 'MELT_F', 'ROFF_F', 'IOFF_F', 'SALT_F', 'SENH_F',
+                    'LWUP_F', 'LWDN_F', 'MELTH_F', 'IFRAC', 'PREC_16O_F', 'PREC_18O_F', 'PREC_HDO_F', 'EVAP_16O_F', 'EVAP_18O_F', 'EVAP_HDO_F',
+                    'MELT_16O_F', 'MELT_18O_F', 'MELT_HDO_F', 'ROFF_16O_F', 'ROFF_18O_F', 'ROFF_HDO_F', 'IOFF_16O_F', 'IOFF_18O_F', 'IOFF_HDO_F',
+                    'R18O', 'FvPER_R18O', 'FvICE_R18O', 'RHDO', 'FvPER_RHDO', 'FvICE_RHDO', 'ND143', 'ND144', 'IAGE', 'QSW_HBL', 'KVMIX', 'KVMIX_M',
+                    'TPOWER', 'VDC_T', 'VDC_S', 'VVC', 'KAPPA_ISOP', 'KAPPA_THIC', 'HOR_DIFF', 'DIA_DEPTH', 'TLT', 'INT_DEPTH', 'UISOP', 'VISOP',
+                    'WISOP', 'ADVT_ISOP', 'ADVS_ISOP', 'VNT_ISOP', 'VNS_ISOP', 'USUBM', 'VSUBM', 'WSUBM', 'HLS_SUBM', 'ADVT_SUBM', 'ADVS_SUBM',
+                    'VNT_SUBM', 'VNS_SUBM', 'HDIFT', 'HDIFS', 'WVEL', 'WVEL2', 'UET', 'VNT', 'WTT', 'UES', 'VNS', 'WTS', 'ADVT', 'ADVS', 'PV',
+                    'Q', 'PD', 'QSW_HTP', 'QFLUX', 'HMXL', 'XMXL', 'TMXL', 'HBLT', 'XBLT', 'TBLT', 'BSF',
+                    'NINO_1_PLUS_2', 'NINO_3', 'NINO_3_POINT_4', 'NINO_4',
+                ]):
+
+        if not isinstance(vn, (list, tuple)):
+            vn = [vn]
+
+        nf = len(self.paths)
+        df_list = []
+        for idx_file in range(nf):
+            vars = {}
+            with gzip.open(self.paths[idx_file], mode='rt') as fp:
+                lines = fp.readlines()
+
+                # find 1st timestamp
+                for line in lines:
+                    i = lines.index(line)
+                    if line.find('This run        started from') != -1 and lines[i+1].find('date(month-day-year):') != -1:
+                        start_date = lines[i+1].split(':')[-1].strip()
+                        break
+
+                mm, dd, yyyy = start_date.split('-')
+
+                # find variable values
+                for line in lines:
+                    for v in vn:
+                        if v not in vars:
+                            vars[v] = []
+                        elif line.strip().startswith(f'{v}:'):
+                            val = float(line.strip().split(':')[-1])
+                            vars[v].append(val)
+
+            df_tmp = pd.DataFrame(vars)
+            dates = xr.cftime_range(start=f'{yyyy}-{mm}-{dd}', freq='MS', periods=len(df_tmp), calendar='noleap')
+            years = []
+            months = []
+            for date in dates:
+                years.append(date.year)
+                months.append(date.month)
+
+            df_tmp['Year'] = years
+            df_tmp['Month'] = months
+            df_list.append(df_tmp)
+        
+        df = pd.concat(df_list, join='inner').drop_duplicates(subset=['Year', 'Month'], keep='last')
+        df = df[ ['Year', 'Month'] + [ col for col in df.columns if col not in ['Year', 'Month']]]
+        self.df = df
+        self.df_ann = self.df.groupby(self.df.Year).mean()
+        self.vn = vn
+
+    def plot_vars(self, vn=None, annualize=True,
+                  figsize=[20, 5], ncol=4, nrow=None, wspace=0.3, hspace=0.5, kws=None, title=None):
+        kws = {} if kws is None else kws
+
+        if vn is None:
+            vn = self.vn
+
+        if not isinstance(vn, (list, tuple)):
+            vn = [vn]
+
+        if nrow is None:
+            nrow = int(np.ceil(len(vn)/ncol))
+
+        if annualize:
+            df_plot = self.df_ann
+        else:
+            df_plot = self.df
+            
+        fig = plt.figure(figsize=figsize)
+        ax = {}
+        gs = gridspec.GridSpec(nrow, ncol)
+        gs.update(wspace=wspace, hspace=hspace)
+
+        for i, v in enumerate(vn):
+            if v in self.df.columns:
+                if v not in kws:
+                    kws[v] = {}
+
+                ax[v] = fig.add_subplot(gs[i])
+                df_plot[v].plot(ax=ax[v], **kws[v])
+                ax[v].set_ylabel(v)
+
+        if title is not None:
+            fig.suptitle(title)
+
+        return fig, ax
+        
