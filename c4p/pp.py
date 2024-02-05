@@ -55,7 +55,7 @@ class Archive:
                 # utils.p_success(f'>>> File {i:05d}: {os.path.basename(path)} -> {os.path.basename(path)}{tag}')
             
         for comp in comps:
-            with tqdm(desc=f'Proceesing {comp}', total=len(self.__dict__[f'{comp}_paths'])) as pbar:
+            with tqdm(desc=f'Processing {comp}', total=len(self.__dict__[f'{comp}_paths'])) as pbar:
                 with ThreadPoolExecutor(nworkers) as exe:
                     futures = [exe.submit(rename_path, i, path) for i, path in enumerate(self.__dict__[f'{comp}_paths'])]
                     [pbar.update(1) for future in as_completed(futures)]
@@ -76,7 +76,7 @@ class Archive:
                 # utils.p_success(f'>>> File {i:05d}: {os.path.basename(path)} -> {os.path.basename(new_path)}')
 
         for comp in comps:
-            with tqdm(desc=f'Proceesing {comp}', total=len(self.__dict__[f'{comp}_paths'])) as pbar:
+            with tqdm(desc=f'Processing {comp}', total=len(self.__dict__[f'{comp}_paths'])) as pbar:
                 with ThreadPoolExecutor(nworkers) as exe:
                     futures = [exe.submit(undo_path, i, path) for i, path in enumerate(self.__dict__[f'{comp}_paths'])]
                     [pbar.update(1) for future in as_completed(futures)]
@@ -107,7 +107,7 @@ class Archive:
                 os.mkdir(os.path.join(dest, comp))
                 
             paths = sorted(glob.glob(os.path.join(self.dirpath, comp, '*')))
-            with tqdm(desc=f'Proceesing {comp}', total=len(paths)) as pbar:
+            with tqdm(desc=f'Processing {comp}', total=len(paths)) as pbar:
                 with ThreadPoolExecutor(nworkers) as exe:
                     futures = [exe.submit(copy_file, src, os.path.join(dest, comp, os.path.basename(src))) for src in paths]
                     [pbar.update(1) for future in as_completed(futures)]
