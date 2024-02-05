@@ -89,15 +89,29 @@ class Archive:
                     os.remove(path)
                     del(self.__dict__[f'{comp}_paths'][i])
 
-    def mv_backups(self, dest=None, comps=['rest', 'logs']):
+    def mk_backups(self, dest=None, comps=['rest', 'logs'], nworkers=None):
+        if nworkers is None:
+            nworkers = threading.active_count()
+            utils.p_header(f'nworkers = {nworkers}')
+
         if dest is None:
             dest = self.dirpath.replace('archive', 'timeseries')
             utils.p_header(f'>>> Destination: {dest}')
+        
+        def copy_file(src, dest):
+            if not os.path.exists(dest):
+                shutil.copyfile(src, dest)
 
-        for comp in tqdm(comps, desc='Moving direcotry'):
-            # shutil.move(os.path.join(self.dirpath, comp), dest, copy_function=shutil.copytree)
-            utils.p_success(f'>>> {os.path.join(self.dirpath, comp)} -> {dest}')
-    
+        for comp in comps:
+            if not os.path.exists(os.path.join(dest, comp)):
+                os.mkdir(os.path.join(dest, comp))
+                
+            paths = sorted(glob.glob(os.path.join(self.dirpath, comp, '*')))
+            with tqdm(desc=f'Proceesing {comp}', total=len(paths)) as pbar:
+                with ThreadPoolExecutor(nworkers) as exe:
+                    futures = [exe.submit(copy_file, src, os.path.join(dest, comp, os.path.basename(src))) for src in paths]
+                    [pbar.update(1) for future in as_completed(futures)]
+
 
 # class Archive:
     
