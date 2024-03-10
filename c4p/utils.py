@@ -234,3 +234,9 @@ def monthly2annual(ds):
     wgts_mon = month_length.groupby('time.year') / month_length.groupby('time.year').mean()
     ds_ann = (ds * wgts_mon).groupby('time.year').mean('time')
     return ds_ann.rename({'year':'time'})
+
+def monthly2season(ds):
+    month_length = ds.time.dt.days_in_month
+    wgts = month_length.groupby('time.season') / month_length.groupby('time.season').mean()
+    ds_ann = (ds * wgts).groupby('time.season').mean('time')
+    return ds_ann.rename({'year':'time'})

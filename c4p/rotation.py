@@ -3,7 +3,10 @@ import pickle
 import xarray as xr
 import numpy as np
 import pandas as pd
-import pygplates
+try:
+    import pygplates
+except:
+    print('c4p warning: `pygplates` is not installed properly')
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 

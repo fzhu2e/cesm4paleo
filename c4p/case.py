@@ -157,6 +157,11 @@ class CESMCase:
         if rof2ocn_fmap is not None: self.xmlchange({'ROF2OCN_FMAPNAME': rof2ocn_fmap})
         if rof2ocn_rmap is not None: self.xmlchange({'ROF2OCN_RMAPNAME': rof2ocn_rmap})
 
+    def replace_file(self, fname, path):
+        utils.copy(path, os.path.join(self.case_dirpath, fname))
+        utils.p_success(f'>>> {fname} replaced with: {path}')
+
+
     def add_mod(self, component, mod_path):
         target_dir = os.path.join(self.case_dirpath, 'SourceMods', f'src.{component}')
         utils.copy(mod_path, target_dir)

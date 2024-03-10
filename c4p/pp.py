@@ -2,6 +2,7 @@
 import os
 import shutil
 import copy
+import subprocess
 import glob
 import gzip
 import xarray as xr
@@ -26,7 +27,41 @@ class Archive:
             self.__dict__[f'{comp}_paths'] = sorted(glob.glob(os.path.join(dirpath, comp, 'hist', '*')))
             utils.p_success(f'>>> Archive.{comp}_paths created')
 
-    def rename_timespan(self, timespan, comps=['atm', 'ice', 'ocn', 'rof', 'lnd'], rename_tag='__c4p_renamed', nworkers=None):
+    # def rename_timespan(self, timespan, comps=['atm', 'ice', 'ocn', 'rof', 'lnd'], rename_tag='__c4p_renamed', nworkers=None):
+    #     ''' Rename the archive files within a timespan
+
+    #     Args:
+    #         timespan (tuple or list): [start_year, end_year] with elements being integers
+    #     '''
+    #     if nworkers is None:
+    #         nworkers = threading.active_count()
+    #         utils.p_header(f'nworkers = {nworkers}')
+
+    #     start_year, end_year = timespan
+    #     self.rename_tag = rename_tag
+
+    #     def rename_path(i, path):
+    #         if self.rename_tag in path:
+    #             return None
+    #         elif '-' in path:
+    #             date_str = path.split('.')[-2]
+    #             try:
+    #                 year = int(date_str[:4])
+    #             except:
+    #                 return None
+
+    #         if year>=start_year and year<=end_year:
+    #             os.rename(path, f'{path}{self.rename_tag}')
+    #             self.__dict__[f'{comp}_paths'][i] = f'{path}{self.rename_tag}'
+    #             # utils.p_success(f'>>> File {i:05d}: {os.path.basename(path)} -> {os.path.basename(path)}{tag}')
+            
+    #     for comp in comps:
+    #         with tqdm(desc=f'Processing {comp}', total=len(self.__dict__[f'{comp}_paths'])) as pbar:
+    #             with ThreadPoolExecutor(nworkers) as exe:
+    #                 futures = [exe.submit(rename_path, i, path) for i, path in enumerate(self.__dict__[f'{comp}_paths'])]
+    #                 [pbar.update(1) for future in as_completed(futures)]
+
+    def rm_timespan(self, timespan, comps=['atm', 'ice', 'ocn', 'rof', 'lnd'], nworkers=None, rehearsal=True):
         ''' Rename the archive files within a timespan
 
         Args:
@@ -37,28 +72,51 @@ class Archive:
             utils.p_header(f'nworkers = {nworkers}')
 
         start_year, end_year = timespan
-        self.rename_tag = rename_tag
+        year_list = []
+        for y in range(start_year, end_year+1):
+            year_list.append(f'{y:04d}')
 
-        def rename_path(i, path):
-            if self.rename_tag in path:
-                return None
-            elif '-' in path:
-                date_str = path.split('.')[-2]
-                try:
-                    year = int(date_str[:4])
-                except:
-                    return None
+        def rm_path(year, comp=None, rehearsal=True):
+            if rehearsal:
+                if comp is None:
+                    cmd = f'ls {self.dirpath}/*/hist/*{year}-[01][0-9][-.]*'
+                else:
+                    cmd = f'ls {self.dirpath}/{comp}/hist/*{year}-[01][0-9][-.]*'
+            else:
+                if comp is None:
+                    cmd = f'rm -f {self.dirpath}/*/hist/*{year}-[01][0-9][-.]*'
+                else:
+                    cmd = f'rm -f {self.dirpath}/{comp}/hist/*{year}-[01][0-9][-.]*'
 
-            if year>=start_year and year<=end_year:
-                os.rename(path, f'{path}{self.rename_tag}')
-                self.__dict__[f'{comp}_paths'][i] = f'{path}{self.rename_tag}'
-                # utils.p_success(f'>>> File {i:05d}: {os.path.basename(path)} -> {os.path.basename(path)}{tag}')
+            subprocess.run(cmd, shell=True)
             
-        for comp in comps:
-            with tqdm(desc=f'Processing {comp}', total=len(self.__dict__[f'{comp}_paths'])) as pbar:
+        if comps == ['atm', 'ice', 'ocn', 'rof', 'lnd']:
+            with tqdm(desc=f'Removing files for year', total=len(year_list)) as pbar:
                 with ThreadPoolExecutor(nworkers) as exe:
-                    futures = [exe.submit(rename_path, i, path) for i, path in enumerate(self.__dict__[f'{comp}_paths'])]
+                    futures = [exe.submit(rm_path, year, comp=None, rehearsal=rehearsal) for year in year_list]
                     [pbar.update(1) for future in as_completed(futures)]
+        else:
+            for comp in comps:
+                utils.p_header(f'Processing {comp} ...')
+                with tqdm(desc=f'Removing files for year #', total=len(year_list)) as pbar:
+                    with ThreadPoolExecutor(nworkers) as exe:
+                        futures = [exe.submit(rm_path, year, comp=comp, rehearsal=rehearsal) for year in year_list]
+                        [pbar.update(1) for future in as_completed(futures)]
+
+    def check_timespan(self, timespan, comps=['atm', 'ice', 'ocn', 'rof', 'lnd']):
+        start_year, end_year = timespan
+        date_list = []
+        for y in range(start_year, end_year+1):
+            for m in range(1, 13):
+                date_list.append(f'{y:04d}-{m:02d}')
+        
+        for comp in comps:
+            utils.p_header(f'Checking component: {comp}')
+            for date in tqdm(date_list, desc='Checking dates'):
+                paths = glob.glob(f'{self.dirpath}/{comp}/hist/*{date}*')
+                if len(paths) < 1:
+                    utils.p_warning(f'File not existed for date: {date}')
+            
 
 
 
@@ -1673,7 +1731,7 @@ class PPCase:
             utils.p_header(f'>>> PPCase.settings_csv: {self.settings_csv}')
             utils.p_success(f'>>> PPCase.settings_df created')
     
-    def load(self, vn, adjust_month=True, grid_weight_dict=None, lat_dict=None, lon_dict=None):
+    def load(self, vn, adjust_month=True, grid_weight_dict=None, lat_dict=None, lon_dict=None, last_only=False):
         _grid_weight_dict = {
             'atm': 'area',
             'ocn': 'TAREA',
@@ -1707,7 +1765,7 @@ class PPCase:
         for v in vn:
             if v in self.vars_info and v not in self.ds:
                 comp, mdl, h_str = self.vars_info[v]
-                paths = glob.glob(
+                paths = sorted(glob.glob(
                     os.path.join(
                         self.root_dir,
                         self.path_pattern \
@@ -1718,7 +1776,9 @@ class PPCase:
                             .replace('vn', v) \
                             .replace('timespan', '*'),
                     )
-                )
+                ))
+                if last_only:
+                    paths = [paths[-1]]
                 ds =  xr.open_mfdataset(paths)
                 if adjust_month:
                     ds['time'] = ds['time'].get_index('time') - datetime.timedelta(days=1)
@@ -1977,7 +2037,7 @@ class PPCase:
         if xlim is not None:
             ax.set_xlim(xlim)
             ax.set_xticks(np.linspace(xlim[0], xlim[-1], 6))
-        ax.set_title('NH Sea-ice Area')
+        ax.set_title('NH Ice Area')
         ax.text(
             1, 0.90,
             f'last {np.abs(stat_period)}-yr mean: {np.mean(self.diagnostics["NHICEFRAC"][stat_period:].values):.2f}',
@@ -2151,7 +2211,7 @@ class PPCase:
 
     def calc_MOC_SH(self, timeslice=slice(-50, None), moc_z=slice(0.5, None), transport_reg=1):
         vn = 'MOC'
-        self.load(vn)
+        self.load(vn, last_only=True)
         self.ds[vn].load()
         self.calc_log['calc_MOC_SH'] = {'timeslice': timeslice, 'moc_z': moc_z, 'transport_reg': transport_reg}
         da = utils.monthly2annual(self.ds[vn])
