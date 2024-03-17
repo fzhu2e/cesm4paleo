@@ -1731,7 +1731,7 @@ class PPCase:
             utils.p_header(f'>>> PPCase.settings_csv: {self.settings_csv}')
             utils.p_success(f'>>> PPCase.settings_df created')
     
-    def load(self, vn, adjust_month=True, grid_weight_dict=None, lat_dict=None, lon_dict=None, last_only=False):
+    def load(self, vn, adjust_month=True, grid_weight_dict=None, lat_dict=None, lon_dict=None, load_idx=None):
         _grid_weight_dict = {
             'atm': 'area',
             'ocn': 'TAREA',
@@ -1777,14 +1777,20 @@ class PPCase:
                             .replace('timespan', '*'),
                     )
                 ))
-                if last_only:
-                    paths = [paths[-1]]
-                ds =  xr.open_mfdataset(paths)
+                if load_idx is not None:
+                    ds =  xr.open_dataset(paths[load_idx])
+                else:
+                    ds =  xr.open_mfdataset(paths)
+
                 if adjust_month:
                     ds['time'] = ds['time'].get_index('time') - datetime.timedelta(days=1)
 
                 if comp not in self.ds.attrs['components']:
-                    self.ds[f'gw_{comp}'] = ds[_grid_weight_dict[comp]][0].fillna(0)
+                    if load_idx is not None:
+                        self.ds[f'gw_{comp}'] = ds[_grid_weight_dict[comp]].fillna(0)
+                    else:
+                        self.ds[f'gw_{comp}'] = ds[_grid_weight_dict[comp]][0].fillna(0)
+
                     if comp == 'atm':
                         self.ds[f'lat_{comp}'] = ds[_lat_dict[comp]][0]
                         self.ds[f'lon_{comp}'] = ds[_lon_dict[comp]][0]
@@ -1889,6 +1895,53 @@ class PPCase:
             return fig, ax
         else:
             return ax
+
+    def plot_GMST_CO2(self, data_dict, figsize=[4, 4], ylim=[10, 40], xlim=None, xticks=[1, 2, 3, 6, 9, 16, 32], xlabel=r'CO2 $\times$ 284.7 [ppm]',
+                      ylabel=r'GMST [$^\circ$C]', ax=None, title=None, plot_kws=None, lgd_kws=None):
+
+        plot_kws = {} if plot_kws is None else plot_kws
+        lgd_kws = {} if lgd_kws is None else lgd_kws
+
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+
+        ax.set_xscale('log')
+        ax.set_xlabel(xlabel, fontweight='bold')
+        ax.set_ylabel(ylabel, fontweight='bold')
+        ax.set_ylim(ylim)
+        ax.set_xlim(xlim)
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xticks)
+
+        _plot_kws = {
+            'ms': 10,
+            'marker': 's',
+        }
+        _plot_kws_default = _plot_kws.copy()
+        for k, v in data_dict.items():
+            if k in plot_kws:
+                _plot_kws.update(plot_kws[k])
+            else:
+                _plot_kws.update(_plot_kws_default)
+
+            ax.plot(v['CO2'], v['GMST'], label=k, **_plot_kws)
+
+        _lgd_kws = {
+            'frameon': False,
+            'bbox_to_anchor': (1, 1),
+            'loc': 'upper left',
+        }
+        _lgd_kws.update(lgd_kws)
+        ax.legend(**_lgd_kws)
+
+        if title is not None:
+            ax.set_title(title, fontweight='bold')
+
+        if 'fig' in locals():
+            return fig, ax
+        else:
+            return ax
+        
 
     def calc_GMRESTOM(self):
         vn = ['FSNT', 'FLNT']
@@ -2209,9 +2262,13 @@ class PPCase:
         else:
             return ax
 
-    def calc_MOC_SH(self, timeslice=slice(-50, None), moc_z=slice(0.5, None), transport_reg=1):
+    def calc_MOC_SH(self, timeslice=slice(-50, None), moc_z=slice(0.5, None), transport_reg=1, load_idx=None):
         vn = 'MOC'
-        self.load(vn, last_only=True)
+        if load_idx is not None:
+            self.load(vn, load_idx=load_idx)
+        else:
+            self.load(vn)
+
         self.ds[vn].load()
         self.calc_log['calc_MOC_SH'] = {'timeslice': timeslice, 'moc_z': moc_z, 'transport_reg': transport_reg}
         da = utils.monthly2annual(self.ds[vn])
