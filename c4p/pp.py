@@ -18,6 +18,41 @@ import threading
 
 from . import utils
 
+class Timeseries:
+    def __init__(self, dirpath):
+        self.dirpath = dirpath
+        utils.p_header(f'>>> Archive.dirpath: {self.dirpath}')
+
+    def check_timespan(self, ref_timespan, target_timespan):
+        ref_paths = glob.glob(f'{self.dirpath}/*/proc/tseries/month_1/*.{ref_timespan}.nc')
+        vn_dict = {}
+        for path in ref_paths:
+            comp = path.split('/proc/')[0].split('/')[-1]
+            vn = path.split('.')[-3]
+            if comp not in vn_dict:
+                vn_dict[comp] = [vn]
+            else:
+                vn_dict[comp].append(vn)
+
+        target_paths = glob.glob(f'{self.dirpath}/*/proc/tseries/month_1/*.{target_timespan}.nc')
+        vn_dict_check = {}
+        for path in target_paths:
+            comp = path.split('/proc/')[0].split('/')[-1]
+            vn = path.split('.')[-3]
+            if comp not in vn_dict_check:
+                vn_dict_check[comp] = [vn]
+            else:
+                vn_dict_check[comp].append(vn)
+
+        for comp in vn_dict.keys():
+            if comp not in vn_dict_check:
+                print(f'{comp} not generated for {target_timespan}')
+            else:
+                for vn in vn_dict[comp]:
+                    if vn not in vn_dict_check[comp]:
+                        print(f'{comp}/{vn} timeseries not generated for {target_timespan}')
+
+
 class Archive:
 
     def __init__(self, dirpath, comps=['atm', 'ice', 'ocn', 'rof', 'lnd']):
