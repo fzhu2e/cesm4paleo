@@ -13,8 +13,13 @@ import datetime
 import cftime
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from matplotlib.colors import BoundaryNorm, Normalize
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import xesmf as xe
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from cartopy import util as cutil
 
 from . import utils
 
@@ -51,6 +56,8 @@ class Timeseries:
                 for vn in vn_dict[comp]:
                     if vn not in vn_dict_check[comp]:
                         print(f'{comp}/{vn} timeseries not generated for {target_timespan}')
+
+        utils.p_success('Done.')
 
 
 class Archive:
@@ -1836,6 +1843,10 @@ class PPCase:
                     self.ds.attrs['components'].append(comp)
 
                 self.ds[v] = ds[v]
+                if comp == 'atm':
+                    self.ds['lat'] = ds['lat']
+                    self.ds['lon'] = ds['lon']
+
                 utils.p_success(f'>>> PPCase.ds["{v}"] created')
         
     def calc_diagnostics(self, vn, kws=None):
@@ -1891,6 +1902,111 @@ class PPCase:
             fig.suptitle(title, y=0.95)
 
         return fig, ax
+
+    def calc_LST(self, load_idx=-1, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        vn = 'TS'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        tas = utils.monthly2annual(self.ds[vn])
+        tas.name = 'TS'
+        tas_ds = tas.to_dataset()
+        tas_ds['lat'] = self.ds['lat']
+        tas_ds['lon'] = self.ds['lon']
+        vn = 'LANDFRAC'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        landfrac = utils.monthly2annual(self.ds[vn])
+        landfrac.name = 'LANDFRAC'
+        landfrac_ds = landfrac.to_dataset()
+        landfrac_ds['lat'] = self.ds['lat']
+        landfrac_ds['lon'] = self.ds['lon']
+
+        tas_rgd = utils.regrid_cam_se(tas_ds, weight_file=weight_file)['TS']
+        self.diagnostics['TAS'] = tas_rgd.mean('time') - 273.15
+        utils.p_success(f'>>> PPCase.diagnostics["TAS"] created')
+
+        landfrac_rgd = utils.regrid_cam_se(landfrac_ds, weight_file=weight_file)['LANDFRAC']
+        self.diagnostics['LST'] = self.diagnostics['TAS'].where(landfrac_rgd.mean('time')>0.5)
+        utils.p_success(f'>>> PPCase.diagnostics["LST"] created')
+
+    def plot_LST(self, figsize=[8, 5], levels=np.linspace(5, 35, 31), cbar_labels=np.linspace(5, 35, 7),
+                 transform=ccrs.PlateCarree(), cmap='RdBu_r', extend='both', coastlinewidth=1,
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='LST [°C]',
+                 central_longitude=180, title='Annual Mean LST',
+                 df_proxy=None, lat_colname='lat', lon_colname='lon', lst_colname='lst',
+                 site_markersize=100, site_marker='o'):
+        lst = self.diagnostics['LST']
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        im = ax.contourf(lst.lon, lst.lat, lst, levels, transform=transform, cmap=cmap, extend=extend)
+        ax.contour(lst.lon, lst.lat, np.isnan(lst), levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        if df_proxy is not None:
+            site_lons = df_proxy[lon_colname]
+            site_lats = df_proxy[lat_colname]
+            site_lsts = df_proxy[lst_colname]
+            cmap_obj = plt.get_cmap(cmap)
+            norm = BoundaryNorm(levels, ncolors=cmap_obj.N, clip=True)
+            ax.scatter(site_lons, site_lats, s=site_markersize, c=site_lsts, marker=site_marker, edgecolors='k',
+                       zorder=99, transform=transform, cmap=cmap, norm=norm)
+            
+        return fig, ax
+
+    def calc_SST(self, load_idx=-1):
+        vn = 'TEMP'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        sst = utils.monthly2annual(self.ds[vn][:,0])
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = sst.TLAT
+        ocn_grid['lon'] = sst.TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        sst_rgd = regridder(sst)
+        self.diagnostics['SST'] = sst_rgd.mean('time')
+        utils.p_success(f'>>> PPCase.diagnostics["SST"] created')
+
+    def plot_SST(self, figsize=[8, 5], levels=np.linspace(5, 35, 31), cbar_labels=np.linspace(5, 35, 7),
+                 transform=ccrs.PlateCarree(), cmap='RdBu_r', extend='both', coastlinewidth=1,
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='SST [°C]',
+                 central_longitude=180, title='Annual Mean SST',
+                 df_proxy=None, lat_colname='lat', lon_colname='lon', sst_colname='sst',
+                 site_markersize=100, site_marker='o'):
+        sst = self.diagnostics['SST']
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        im = ax.contourf(sst.lon, sst.lat, sst, levels, transform=transform, cmap=cmap, extend=extend)
+        ax.contour(sst.lon, sst.lat, np.isnan(sst), levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        if df_proxy is not None:
+            site_lons = df_proxy[lon_colname]
+            site_lats = df_proxy[lat_colname]
+            site_ssts = df_proxy[sst_colname]
+            cmap_obj = plt.get_cmap(cmap)
+            norm = BoundaryNorm(levels, ncolors=cmap_obj.N, clip=True)
+            ax.scatter(site_lons, site_lats, s=site_markersize, c=site_ssts, marker=site_marker, edgecolors='k',
+                       zorder=99, transform=transform, cmap=cmap, norm=norm)
+            
+        return fig, ax
+        
 
     def calc_GMST(self):
         vn = 'TS'
