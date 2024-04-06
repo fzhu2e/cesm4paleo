@@ -16,6 +16,7 @@ from matplotlib import gridspec
 from matplotlib.colors import BoundaryNorm, Normalize
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import termcolor
 import xesmf as xe
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -23,41 +24,41 @@ from cartopy import util as cutil
 
 from . import utils
 
-class Timeseries:
-    def __init__(self, dirpath):
-        self.dirpath = dirpath
-        utils.p_header(f'>>> Archive.dirpath: {self.dirpath}')
+# class Timeseries:
+#     def __init__(self, dirpath):
+#         self.dirpath = dirpath
+#         utils.p_header(f'>>> Archive.dirpath: {self.dirpath}')
 
-    def check_timespan(self, ref_timespan, target_timespan):
-        ref_paths = glob.glob(f'{self.dirpath}/*/proc/tseries/month_1/*.{ref_timespan}.nc')
-        vn_dict = {}
-        for path in ref_paths:
-            comp = path.split('/proc/')[0].split('/')[-1]
-            vn = path.split('.')[-3]
-            if comp not in vn_dict:
-                vn_dict[comp] = [vn]
-            else:
-                vn_dict[comp].append(vn)
+#     def check_timespan(self, ref_timespan, target_timespan):
+#         ref_paths = glob.glob(f'{self.dirpath}/*/proc/tseries/month_1/*.{ref_timespan}.nc')
+#         vn_dict = {}
+#         for path in ref_paths:
+#             comp = path.split('/proc/')[0].split('/')[-1]
+#             vn = path.split('.')[-3]
+#             if comp not in vn_dict:
+#                 vn_dict[comp] = [vn]
+#             else:
+#                 vn_dict[comp].append(vn)
 
-        target_paths = glob.glob(f'{self.dirpath}/*/proc/tseries/month_1/*.{target_timespan}.nc')
-        vn_dict_check = {}
-        for path in target_paths:
-            comp = path.split('/proc/')[0].split('/')[-1]
-            vn = path.split('.')[-3]
-            if comp not in vn_dict_check:
-                vn_dict_check[comp] = [vn]
-            else:
-                vn_dict_check[comp].append(vn)
+#         target_paths = glob.glob(f'{self.dirpath}/*/proc/tseries/month_1/*.{target_timespan}.nc')
+#         vn_dict_check = {}
+#         for path in target_paths:
+#             comp = path.split('/proc/')[0].split('/')[-1]
+#             vn = path.split('.')[-3]
+#             if comp not in vn_dict_check:
+#                 vn_dict_check[comp] = [vn]
+#             else:
+#                 vn_dict_check[comp].append(vn)
 
-        for comp in vn_dict.keys():
-            if comp not in vn_dict_check:
-                print(f'{comp} not generated for {target_timespan}')
-            else:
-                for vn in vn_dict[comp]:
-                    if vn not in vn_dict_check[comp]:
-                        print(f'{comp}/{vn} timeseries not generated for {target_timespan}')
+#         for comp in vn_dict.keys():
+#             if comp not in vn_dict_check:
+#                 print(f'{comp} not generated for {target_timespan}')
+#             else:
+#                 for vn in vn_dict[comp]:
+#                     if vn not in vn_dict_check[comp]:
+#                         print(f'{comp}/{vn} timeseries not generated for {target_timespan}')
 
-        utils.p_success('Done.')
+#         utils.p_success('Done.')
 
 
 class Archive:
@@ -152,12 +153,32 @@ class Archive:
             for m in range(1, 13):
                 date_list.append(f'{y:04d}-{m:02d}')
         
+        df_comp_list = []
         for comp in comps:
+            df_comp = pd.DataFrame(columns=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'])
             utils.p_header(f'Checking component: {comp}')
             for date in tqdm(date_list, desc='Checking dates'):
+                yyyy, mm = date.split('-')
                 paths = glob.glob(f'{self.dirpath}/{comp}/hist/*{date}*')
+
                 if len(paths) < 1:
-                    utils.p_warning(f'File not existed for date: {date}')
+                    df_comp.loc[f'{comp}-{yyyy}', mm] = f'{date}!'
+                else:
+                    df_comp.loc[f'{comp}-{yyyy}', mm] = date
+
+            df_comp_list.append(df_comp)
+        
+        df = pd.concat(df_comp_list)
+        def style_missing(v, props=''):
+            return props if '!' in v else None
+        
+        def remove_mark(v):
+            if '!' in v:
+                v = v.split('!')[0]
+            return v
+
+        df = df.style.map(style_missing, props='background-color:red;color:white').format(remove_mark)
+        return df
             
 
 
@@ -1772,6 +1793,43 @@ class PPCase:
             self.settings_df = settings_df
             utils.p_header(f'>>> PPCase.settings_csv: {self.settings_csv}')
             utils.p_success(f'>>> PPCase.settings_df created')
+
+    def check_timespan(self, ref_timespan, target_timespan):
+        utils.p_header('==================================')
+        utils.p_header('Checking Timespan')
+        utils.p_header('----------------------------------')
+        utils.p_header(f'Reference timespan: {ref_timespan}')
+        utils.p_header(f'   Target timespan: {target_timespan}')
+        ref_paths = glob.glob(f'{self.root_dir}/*/proc/tseries/month_1/*.{ref_timespan}.nc')
+        vn_dict = {}
+        for path in ref_paths:
+            comp = path.split('/proc/')[0].split('/')[-1]
+            vn = path.split('.')[-3]
+            if comp not in vn_dict:
+                vn_dict[comp] = [vn]
+            else:
+                vn_dict[comp].append(vn)
+
+        target_paths = glob.glob(f'{self.root_dir}/*/proc/tseries/month_1/*.{target_timespan}.nc')
+        vn_dict_check = {}
+        for path in target_paths:
+            comp = path.split('/proc/')[0].split('/')[-1]
+            vn = path.split('.')[-3]
+            if comp not in vn_dict_check:
+                vn_dict_check[comp] = [vn]
+            else:
+                vn_dict_check[comp].append(vn)
+
+        for comp in vn_dict.keys():
+            if comp not in vn_dict_check:
+                print(f'{comp} not generated for {target_timespan}')
+            else:
+                for vn in vn_dict[comp]:
+                    if vn not in vn_dict_check[comp]:
+                        print(f'{comp}/{vn} timeseries not generated for {target_timespan}')
+
+        utils.p_success('Done.')
+        utils.p_header('==================================\n')
     
     def load(self, vn, adjust_month=True, grid_weight_dict=None, lat_dict=None, lon_dict=None, load_idx=None):
         _grid_weight_dict = {
@@ -1795,7 +1853,7 @@ class PPCase:
         _lon_dict = {
             'atm': 'lon',
             'ocn': 'TLONG',
-            'ice': 'TLONG',
+            'ice': 'TLON',
             'lnd': 'lon',
         }
         if lon_dict is not None:
@@ -1843,11 +1901,35 @@ class PPCase:
                     self.ds.attrs['components'].append(comp)
 
                 self.ds[v] = ds[v]
+                self.ds[v].attrs['source'] = paths[load_idx] if load_idx is not None else paths
                 if comp == 'atm':
                     self.ds['lat'] = ds['lat']
                     self.ds['lon'] = ds['lon']
 
                 utils.p_success(f'>>> PPCase.ds["{v}"] created')
+            elif v in ['KMT', 'z_t', 'z_w']:
+                comp, mdl, h_str = self.vars_info['TEMP']
+                paths = sorted(glob.glob(
+                    os.path.join(
+                        self.root_dir,
+                        self.path_pattern \
+                            .replace('comp', comp) \
+                            .replace('casename', '*') \
+                            .replace('mdl', mdl) \
+                            .replace('h_str', h_str) \
+                            .replace('vn', 'TEMP') \
+                            .replace('timespan', '*'),
+                    )
+                ))
+                with xr.open_dataset(paths[-1], decode_cf=False) as ds:
+                    self.ds[v] = ds[v]
+                
+            elif v not in self.vars_info:
+                utils.p_warning(f'>>> Variable {v} not existed')
+            elif v in self.ds:
+                utils.p_warning(f'>>> Variable {v} already loaded as PPCase.ds["{v}"]')
+
+        
         
     def calc_diagnostics(self, vn, kws=None):
         kws = {} if kws is None else kws
@@ -1901,6 +1983,108 @@ class PPCase:
 
             fig.suptitle(title, y=0.95)
 
+        return fig, ax
+
+    def calc_depth(self):
+        self.load('KMT')
+        self.load('z_t')
+        self.load('TEMP', load_idx=-1)
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = self.ds['TEMP'].TLAT
+        ocn_grid['lon'] = self.ds['TEMP'].TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        kmt_rgd = regridder(self.ds['KMT'])
+        nlat, nlon = kmt_rgd.shape
+        depth = kmt_rgd.copy()
+        for j in range(nlat):
+            for i in range(nlon):
+                k = int(np.atleast_1d(kmt_rgd[j, i])[0])
+                if k == 0:
+                    depth[j, i] = 0
+                else:
+                    depth[j, i] = self.ds['z_t'][k-1]
+
+        self.diagnostics['depth'] = depth/1e2/1e3   # unit: m
+        utils.p_success(f'>>> PPCase.diagnostics["depth"] created')
+
+    def plot_depth(self, figsize=[8, 5], levels=np.linspace(0, 5, 51), cbar_labels=np.linspace(0, 5, 11),
+                 transform=ccrs.PlateCarree(), cmap='terrain_r', extend='max',
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='Depth [km]',
+                 central_longitude=180, title='Topography'):
+        depth = self.diagnostics['depth']
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        im = ax.contourf(depth.lon, depth.lat, depth, levels, transform=transform, cmap=cmap, extend=extend)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        return fig, ax
+
+    def calc_IAGE_zm(self, load_idx=-1, lon_min=0, lon_max=360, lat_min=-90, lat_max=90):
+        vn = 'IAGE'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        da = utils.monthly2annual(self.ds[vn])
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = da.TLAT
+        ocn_grid['lon'] = da.TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        da_rgd = regridder(da)
+        mask_lat = (da_rgd['lat']>=lat_min) & (da_rgd['lat']<=lat_max)
+        if lon_max <= 360:
+            mask_lon = (da_rgd['lon']>=lon_min) & (da_rgd['lon']<=lon_max)
+        else:
+            mask_lon = (da_rgd['lon']>=lon_min) & (da_rgd['lon']<=360) | (da_rgd['lon']>=0) & (da_rgd['lon']<=lon_max-360)
+
+        da_sub = da_rgd.sel({'lon': da_rgd['lon'][mask_lon], 'lat': da_rgd['lat'][mask_lat]})
+        da_sub_ann = da_sub.mean('time')
+        self.diagnostics['IAGE'] = da_sub_ann.copy()
+        self.diagnostics['IAGE_zm'] = da_sub_ann.mean('lon')
+        utils.p_success(f'>>> PPCase.diagnostics["IAGE"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["IAGE_zm"] created')
+
+    def plot_IAGE_zm(self, figsize=[8, 5], cmap='GnBu', extend='max',
+                     xticks=[-90, -60, -30, 0, 30, 60, 90],
+                     xticklabels=['90°S', '60°S', '30°S', 'EQ', '30°N', '60°N', '90°N'],
+                     yticks=np.linspace(0, 500000, 6),
+                     yticklabels=np.linspace(0, 5, 6),
+                     levels=np.linspace(0, 2000, 21), cbar_labels=np.linspace(0, 2000, 11),
+                     cbar_orientation='vertical', cbar_shrink=1.0, cbar_pad=0.05,
+                     cbar_aspect=10, cbar_title='[yrs]',
+                     title='IAGE Annual & Zonal Mean',
+                    ):
+        fig, ax = plt.subplots(figsize=figsize)
+        da = self.diagnostics['IAGE_zm']
+
+        im = ax.contourf(da.lat, da.z_t, da, cmap=cmap, levels=levels, extend=extend)
+        ax.set_facecolor('gray')
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xticklabels)
+        ax.set_yticks(yticks)
+        ax.set_yticklabels(yticklabels)
+        ax.invert_yaxis()
+        ax.set_ylabel('Depth [km]')
+        ax.set_xlabel('Latitude')
+        ax.set_title(title)
+        ax.grid(False)
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad, aspect=cbar_aspect)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
         return fig, ax
 
     def calc_LST(self, load_idx=-1, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
@@ -1959,7 +2143,340 @@ class PPCase:
             
         return fig, ax
 
-    def calc_SST(self, load_idx=-1):
+    def calc_aice(self, load_idx=-1):
+        vn = 'aice'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        aice_ann = utils.monthly2annual(self.ds[vn])
+        aice_season = utils.monthly2season(self.ds[vn])
+        aice_summer = aice_season.sel(season='JJA')
+        aice_winter = aice_season.sel(season='DJF')
+
+        self.load('TEMP', load_idx=load_idx)
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = self.ds['TEMP'].TLAT
+        ocn_grid['lon'] = self.ds['TEMP'].TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        aice_ann_rgd = regridder(aice_ann)
+        aice_summer_rgd = regridder(aice_summer)
+        aice_winter_rgd = regridder(aice_winter)
+        self.load('KMT')
+
+        self.diagnostics['aice_ann'] = aice_ann_rgd.mean('time')
+        self.diagnostics['aice_summer'] = aice_summer_rgd
+        self.diagnostics['aice_winter'] = aice_winter_rgd
+        self.diagnostics['KMT'] = regridder(self.ds['KMT'])
+        utils.p_success(f'>>> PPCase.diagnostics["aice_ann"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["aice_summer"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["aice_winter"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["KMT"] created')
+
+    def plot_aice(self, season='ann', figsize=[8, 5], levels=np.linspace(0, 1, 11), cbar_labels=np.linspace(0, 1, 6),
+                 transform=ccrs.PlateCarree(), cmap='Blues_r', extend='neither', projection='Orthographic',
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='Ice Area [%]',
+                 central_longitude=180, central_latitude=90, title='Ice Area'):
+        fig = plt.figure(figsize=figsize)
+        if projection == 'Orthographic':
+            ax = plt.subplot(projection=ccrs.Orthographic(central_longitude=central_longitude, central_latitude=central_latitude))
+        elif projection == 'Robinson':
+            ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        else:
+            raise ValueError('Wrong `projection` is set. Should be either `Robinson` or `Orthographic`.')
+        ax.set_global()
+        ax.set_title(title)
+
+        aice = self.diagnostics[f'aice_{season}']
+        # field_var_c, lon_c = cutil.add_cyclic_point(aice.fillna(0), aice.lon)
+        field_var_c, lon_c = cutil.add_cyclic_point(aice, aice.lon)
+        im = ax.contourf(lon_c, aice.lat, field_var_c, levels, transform=transform, cmap=cmap, extend=extend)
+
+        kmt = self.diagnostics['KMT']
+        field_var_c, lon_c = cutil.add_cyclic_point(kmt, kmt.lon)
+        # ax.contour(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth, zorder=99)
+        ax.contourf(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='gray', transform=transform, zorder=99)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        return fig, ax
+
+    def calc_KMT(self):
+        self.load('KMT')
+        self.load('TEMP', load_idx=-1)
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = self.ds['TEMP'].TLAT
+        ocn_grid['lon'] = self.ds['TEMP'].TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+        self.diagnostics['KMT'] = regridder(self.ds['KMT'])
+        utils.p_success(f'>>> PPCase.diagnostics["KMT"] created')
+
+    def plot_KMT(self, figsize=[8, 5], transform=ccrs.PlateCarree(), central_longitude=180, title=None,
+                 df_proxy=None, lat_colname=None, lon_colname=None, ptype_colname=None, ms=100,
+                 clr_dict=None, marker_dict=None, edgeclr='k', lgd_loc='upper right', lgd_bbox_to_anchor=(1.3, 1)):
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        kmt = self.diagnostics['KMT']
+        field_var_c, lon_c = cutil.add_cyclic_point(kmt, kmt.lon)
+        ax.contourf(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='gray', transform=transform, zorder=99)
+
+        if df_proxy is not None:
+            clr_dict = {} if clr_dict is None else clr_dict
+            marker_dict = {} if marker_dict is None else marker_dict
+            _clr_dict = {
+                'd18O': 'tab:brown',
+                'UK37': 'tab:green',
+                'TEX86': 'tab:red',
+                'TEX86+UK37': 'tab:purple',
+                'MgCa': 'tab:orange',
+                'Others': 'tab:blue'
+            }
+            _marker_dict = {
+                'd18O': 'o',
+                'UK37': '^',
+                'TEX86': 'v',
+                'MgCa': 's',
+                'TEX86+UK37': 'P',
+                'Others': '*'
+            }
+            _clr_dict.update(clr_dict)
+            _marker_dict.update(marker_dict)
+            site_ptypes = list(set(df_proxy[ptype_colname]))
+            for site_ptype in site_ptypes:
+                df_tmp = df_proxy[df_proxy[ptype_colname] == site_ptype]
+                ax.scatter(df_tmp[lon_colname], df_tmp[lat_colname], s=ms, c=_clr_dict[site_ptype], marker=_marker_dict[site_ptype],
+                           edgecolors=edgeclr, zorder=99, transform=transform, label=site_ptype)
+
+            ax.legend(frameon=False, loc=lgd_loc, bbox_to_anchor=lgd_bbox_to_anchor)
+
+            if title is not None:
+                ax.set_title(title)
+
+        return fig, ax
+
+    def calc_ICEFRAC(self, load_idx=-1, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        vn = 'ICEFRAC'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        ICEFRAC_ann = utils.monthly2annual(self.ds[vn])
+        ICEFRAC_season = utils.monthly2season(self.ds[vn])
+        ICEFRAC_summer = ICEFRAC_season.sel(season='JJA')
+        ICEFRAC_winter = ICEFRAC_season.sel(season='DJF')
+
+        ICEFRAC_ann.name = 'ICEFRAC'
+        ICEFRAC_ann_ds = ICEFRAC_ann.to_dataset()
+        ICEFRAC_ann_ds['lat'] = self.ds['lat']
+        ICEFRAC_ann_ds['lon'] = self.ds['lon']
+        ICEFRAC_ann_rgd = utils.regrid_cam_se(ICEFRAC_ann_ds, weight_file=weight_file)['ICEFRAC']
+
+        ICEFRAC_summer.name = 'ICEFRAC'
+        ICEFRAC_summer_ds = ICEFRAC_summer.to_dataset()
+        ICEFRAC_summer_ds['lat'] = self.ds['lat']
+        ICEFRAC_summer_ds['lon'] = self.ds['lon']
+        ICEFRAC_summer_rgd = utils.regrid_cam_se(ICEFRAC_summer_ds, weight_file=weight_file)['ICEFRAC']
+
+        ICEFRAC_winter.name = 'ICEFRAC'
+        ICEFRAC_winter_ds = ICEFRAC_winter.to_dataset()
+        ICEFRAC_winter_ds['lat'] = self.ds['lat']
+        ICEFRAC_winter_ds['lon'] = self.ds['lon']
+        ICEFRAC_winter_rgd = utils.regrid_cam_se(ICEFRAC_winter_ds, weight_file=weight_file)['ICEFRAC']
+
+        self.load('KMT')
+
+        self.load('TEMP', load_idx=load_idx)
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = self.ds['TEMP'].TLAT
+        ocn_grid['lon'] = self.ds['TEMP'].TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        self.diagnostics['ICEFRAC_ann'] = ICEFRAC_ann_rgd.mean('time')
+        self.diagnostics['ICEFRAC_summer'] = ICEFRAC_summer_rgd
+        self.diagnostics['ICEFRAC_winter'] = ICEFRAC_winter_rgd
+        self.diagnostics['KMT'] = regridder(self.ds['KMT'])
+        utils.p_success(f'>>> PPCase.diagnostics["ICEFRAC_ann"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["ICEFRAC_summer"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["ICEFRAC_winter"] created')
+        utils.p_success(f'>>> PPCase.diagnostics["KMT"] created')
+
+    def plot_ICEFRAC(self, season='ann', figsize=[8, 5], levels=np.linspace(0, 1, 11), cbar_labels=np.linspace(0, 1, 6),
+                 transform=ccrs.PlateCarree(), cmap='Blues_r', extend='neither', coastlinewidth=1, projection='Orthographic',
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='Ice Area [%]',
+                 central_longitude=180, central_latitude=90, title='Ice Area'):
+        fig = plt.figure(figsize=figsize)
+        if projection == 'Orthographic':
+            ax = plt.subplot(projection=ccrs.Orthographic(central_longitude=central_longitude, central_latitude=central_latitude))
+        elif projection == 'Robinson':
+            ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        else:
+            raise ValueError('Wrong `projection` is set. Should be either `Robinson` or `Orthographic`.')
+        ax.set_global()
+        ax.set_title(title)
+
+        ICEFRAC = self.diagnostics[f'ICEFRAC_{season}']
+        # field_var_c, lon_c = cutil.add_cyclic_point(ICEFRAC.fillna(0), ICEFRAC.lon)
+        field_var_c, lon_c = cutil.add_cyclic_point(ICEFRAC, ICEFRAC.lon)
+        im = ax.contourf(lon_c, ICEFRAC.lat, field_var_c, levels, transform=transform, cmap=cmap, extend=extend)
+
+        kmt = self.diagnostics['KMT']
+        field_var_c, lon_c = cutil.add_cyclic_point(kmt, kmt.lon)
+        # ax.contour(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth, zorder=99)
+        ax.contourf(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='gray', transform=transform, linewidths=coastlinewidth, zorder=99)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        return fig, ax
+
+    def calc_TS(self, load_idx=-1, clim=True, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        vn = 'TS'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        da = utils.monthly2annual(self.ds[vn]) - 273.15
+        da.name = vn
+        ds = da.to_dataset()
+        ds['lat'] = self.ds['lat']
+        ds['lon'] = self.ds['lon']
+        da_rgd = utils.regrid_cam_se(ds, weight_file=weight_file)[vn]
+
+        if clim:
+            self.diagnostics['TS'] = da_rgd.mean('time')
+        else:
+            self.diagnostics['TS'] = da_rgd
+        utils.p_success(f'>>> PPCase.diagnostics["TS"] created')
+
+    def plot_TS(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(5, 35, 31), cbar_labels=np.linspace(5, 35, 7),
+                 transform=ccrs.PlateCarree(), cmap='RdBu_r', extend='both', coastlinewidth=0.5,
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='TS [°C]',
+                 central_longitude=180, title='Annual Mean Surface Temperature'):
+        if clim:
+            ts = self.diagnostics['TS']
+        else:
+            ts = self.diagnostics['TS'][load_idx]
+            
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        im = ax.contourf(ts.lon, ts.lat, ts, levels, transform=transform, cmap=cmap, extend=extend)
+
+        if 'KMT' not in self.diagnostics:
+            self.calc_KMT()
+        kmt = self.diagnostics['KMT']
+        field_var_c, lon_c = cutil.add_cyclic_point(kmt, kmt.lon)
+        ax.contour(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth, zorder=99)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+            
+        return fig, ax
+
+    def calc_SSS(self, load_idx=-1, clim=True):
+        vn = 'SALT'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        sss = utils.monthly2annual(self.ds[vn][:,0])
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = sss.TLAT
+        ocn_grid['lon'] = sss.TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        sss_rgd = regridder(sss)
+        if clim:
+            self.diagnostics['SSS'] = sss_rgd.mean('time')
+        else:
+            self.diagnostics['SSS'] = sss_rgd
+        utils.p_success(f'>>> PPCase.diagnostics["SSS"] created')
+
+    def plot_SSS(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(20, 40, 21), cbar_labels=np.linspace(20, 40, 11),
+                 transform=ccrs.PlateCarree(), cmap='viridis', extend='both', coastlinewidth=1,
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='Salinity [g/kg]',
+                 central_longitude=180, title='Annual Mean Sea-surface Salinity'):
+        if clim:
+            sss = self.diagnostics['SSS']
+        else:
+            sss = self.diagnostics['SSS'][load_idx]
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        im = ax.contourf(sss.lon, sss.lat, sss, levels, transform=transform, cmap=cmap, extend=extend)
+        ax.contour(sss.lon, sss.lat, np.isnan(sss), levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        return fig, ax
+
+    def calc_SSd18O(self, load_idx=-1, clim=True):
+        vn = 'R18O'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        d18O = utils.monthly2annual(self.ds[vn][:,0])
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = d18O.TLAT
+        ocn_grid['lon'] = d18O.TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        d18O_rgd = regridder(d18O)
+        if clim:
+            self.diagnostics['SSd18O'] = d18O_rgd.mean('time')
+        else:
+            self.diagnostics['SSd18O'] = d18O_rgd
+
+        utils.p_success(f'>>> PPCase.diagnostics["SSd18O"] created')
+
+    def plot_SSd18O(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(0.992, 1.002, 21), cbar_labels=np.linspace(0.992, 1.002, 6),
+                 transform=ccrs.PlateCarree(), cmap='viridis', extend='both', coastlinewidth=1,
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='d18O [permil]',
+                 central_longitude=180, title='Annual Mean Sea-surface d18O'):
+        if clim:
+            d18O = self.diagnostics['SSd18O']
+        else:
+            d18O = self.diagnostics['SSd18O'][load_idx]
+
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        im = ax.contourf(d18O.lon, d18O.lat, d18O, levels, transform=transform, cmap=cmap, extend=extend)
+        ax.contour(d18O.lon, d18O.lat, np.isnan(d18O), levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        return fig, ax
+
+
+    def calc_SST(self, load_idx=-1, clim=True):
         vn = 'TEMP'
         self.load(vn, load_idx=load_idx)
         self.ds[vn].load()
@@ -1974,16 +2491,23 @@ class PPCase:
         )
 
         sst_rgd = regridder(sst)
-        self.diagnostics['SST'] = sst_rgd.mean('time')
+        if clim:
+            self.diagnostics['SST'] = sst_rgd.mean('time')
+        else:
+            self.diagnostics['SST'] = sst_rgd
         utils.p_success(f'>>> PPCase.diagnostics["SST"] created')
 
-    def plot_SST(self, figsize=[8, 5], levels=np.linspace(5, 35, 31), cbar_labels=np.linspace(5, 35, 7),
+    def plot_SST(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(5, 35, 31), cbar_labels=np.linspace(5, 35, 7),
                  transform=ccrs.PlateCarree(), cmap='RdBu_r', extend='both', coastlinewidth=1,
                  cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='SST [°C]',
                  central_longitude=180, title='Annual Mean SST',
                  df_proxy=None, lat_colname='lat', lon_colname='lon', sst_colname='sst',
                  site_markersize=100, site_marker='o'):
-        sst = self.diagnostics['SST']
+        if clim:
+            sst = self.diagnostics['SST']
+        else:
+            sst = self.diagnostics['SST'][load_idx]
+            
         fig = plt.figure(figsize=figsize)
         ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
         ax.set_global()
@@ -2006,7 +2530,50 @@ class PPCase:
                        zorder=99, transform=transform, cmap=cmap, norm=norm)
             
         return fig, ax
+
+    def calc_MLD(self, vn='XMXL', load_idx=-1, season='DJF'):
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        if season == 'ann':
+            da = utils.monthly2annual(self.ds[vn])
+        else:
+            da = utils.monthly2season(self.ds[vn]).sel(season=season)
+
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = da.TLAT
+        ocn_grid['lon'] = da.TLONG
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        da_rgd = regridder(da)
+        if season == 'ann':
+            self.diagnostics['MLD'] = da_rgd.mean('time')
+        else:
+            self.diagnostics['MLD'] = da_rgd
+        utils.p_success(f'>>> PPCase.diagnostics["MLD"] created')
         
+    def plot_MLD(self, figsize=[8, 5], levels=np.linspace(0, 500, 21), cbar_labels=np.linspace(0, 500, 11),
+                 transform=ccrs.PlateCarree(), cmap='GnBu', extend='max', coastlinewidth=1,
+                 cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='MLD [m]',
+                 central_longitude=-30, title='Mixed Layer Depth'):
+        mld = self.diagnostics['MLD']/100
+        fig = plt.figure(figsize=figsize)
+        ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+        ax.set_global()
+        ax.set_title(title)
+
+        field_var_c, lon_c = cutil.add_cyclic_point(mld, mld.lon)
+        im = ax.contourf(lon_c, mld.lat, field_var_c, levels, transform=transform, cmap=cmap, extend=extend)
+        ax.contour(lon_c, mld.lat, np.isnan(field_var_c), levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth)
+
+        cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+        cbar.ax.set_title(cbar_title)
+        cbar.set_ticks(cbar_labels)
+
+        return fig, ax
 
     def calc_GMST(self):
         vn = 'TS'
@@ -2211,19 +2778,27 @@ class PPCase:
         else:
             return ax
 
-    def calc_NHICEFRAC(self):
-        vn = 'ICEFRAC'
+    def calc_NHICEFRAC(self, vn='aice'):
         self.load(vn)
         self.ds[vn].load()
-        convert_factor = 4*np.pi*6.37122**2 / self.ds.gw_atm.sum().values  # 1e6 km^2
-
         da = utils.monthly2annual(self.ds[vn])
-        da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
+
+        if vn == 'ICEFRAC':
+            convert_factor = 4*np.pi*6.37122**2 / self.ds.gw_atm.sum().values  # 1e6 km^2
+            da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
+        elif vn == 'aice':
+            convert_factor = 4*np.pi*6.37122**2 / self.ds.gw_ice.sum().values / 100  # 1e6 km^2
+            da_nhm = da.where(self.ds.lat_ice>0).weighted(self.ds.gw_ice).sum(list(self.ds.gw_ice.dims))
+
         self.diagnostics['NHICEFRAC'] = da_nhm * convert_factor
         utils.p_success(f'>>> PPCase.diagnostics["NHICEFRAC"] created')
 
         da = self.ds[vn].groupby('time.month').mean('time')
-        da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
+        if vn == 'ICEFRAC':
+            da_nhm = da.where(self.ds.lat_atm>0).weighted(self.ds.gw_atm).sum(list(self.ds.gw_atm.dims))
+        elif vn == 'aice':
+            da_nhm = da.where(self.ds.lat_ice>0).weighted(self.ds.gw_ice).sum(list(self.ds.gw_ice.dims))
+
         self.diagnostics['NHICEFRAC_clim'] = da_nhm * convert_factor
         utils.p_success(f'>>> PPCase.diagnostics["NHICEFRAC_clim"] created')
 
@@ -2268,7 +2843,7 @@ class PPCase:
         ax.set_yticks(np.linspace(ylim[0], ylim[-1], 5))
         ax.set_xlim(1, 12)
         ax.set_xticks(list(range(1, 13)))
-        ax.set_title('Annual Cycle of NH Sea-ice Area')
+        ax.set_title('Annual Cycle of NH Ice Area')
 
         if 'fig' in locals():
             return fig, ax
@@ -2413,7 +2988,7 @@ class PPCase:
         else:
             return ax
 
-    def calc_MOC_SH(self, timeslice=slice(-50, None), moc_z=slice(0.5, None), transport_reg=1, load_idx=None):
+    def calc_MOC_SH(self, moc_z=slice(0.5, None), transport_reg=0, load_idx=None):
         vn = 'MOC'
         if load_idx is not None:
             self.load(vn, load_idx=load_idx)
@@ -2421,13 +2996,13 @@ class PPCase:
             self.load(vn)
 
         self.ds[vn].load()
-        self.calc_log['calc_MOC_SH'] = {'timeslice': timeslice, 'moc_z': moc_z, 'transport_reg': transport_reg}
+        self.calc_log['calc_MOC_SH'] = {'moc_z': moc_z, 'transport_reg': transport_reg}
         da = utils.monthly2annual(self.ds[vn])
         da['moc_z'] = da['moc_z'] / 1e5  # cm -> km
         da['moc_z'].attrs['units'] = 'km'
 
         self.diagnostics['MOC_SH'] = da.isel(transport_reg=transport_reg, moc_comp=0).sel(moc_z=moc_z, lat_aux_grid=slice(-90, -28)).min(('moc_z', 'lat_aux_grid'))
-        self.diagnostics['MOC_SH_yz'] = da.isel(transport_reg=transport_reg, moc_comp=0, time=timeslice).mean('time')
+        self.diagnostics['MOC_SH_yz'] = da.isel(transport_reg=transport_reg, moc_comp=0).mean('time')
         self.diagnostics = self.diagnostics.drop_vars('moc_components')
         utils.p_success(f'>>> PPCase.diagnostics["MOC_SH"] created')
         utils.p_success(f'>>> PPCase.diagnostics["MOC_SH_yz"] created')
@@ -2469,7 +3044,7 @@ class PPCase:
         im = ax.contourf(da.lat_aux_grid, da.moc_z, da, cmap='RdBu_r', extend='both', levels=amoc_levels)
         ax.set_xticks([-90, -60, -30, 0, 30, 60, 90])
         ax.set_xlim(xlim)
-        ax.set_title(f"MOC_SH_yz (last {np.abs(self.calc_log['calc_MOC_SH']['timeslice'].start)} yrs)")
+        ax.set_title(f"MOC_SH_yz")
         ax.invert_yaxis()
         ax.set_yticks([0, 2, 4])
         ax.set_xlabel(xlabel)

@@ -14,24 +14,34 @@ import xesmf as xe
 
 
 def p_header(text):
-    print(ca.Fore.CYAN + ca.Style.BRIGHT + text)
-    print(ca.Style.RESET_ALL, end='')
+    print(ca.Fore.CYAN + ca.Style.BRIGHT + text + ca.Style.RESET_ALL)
 
 def p_hint(text):
-    print(ca.Fore.LIGHTBLACK_EX + ca.Style.BRIGHT + text)
-    print(ca.Style.RESET_ALL, end='')
+    print(ca.Fore.LIGHTBLACK_EX + ca.Style.BRIGHT + text + ca.Style.RESET_ALL)
 
 def p_success(text):
-    print(ca.Fore.GREEN + ca.Style.BRIGHT + text)
-    print(ca.Style.RESET_ALL, end='')
+    print(ca.Fore.GREEN + ca.Style.BRIGHT + text + ca.Style.RESET_ALL)
 
 def p_fail(text):
-    print(ca.Fore.RED + ca.Style.BRIGHT + text)
-    print(ca.Style.RESET_ALL, end='')
+    print(ca.Fore.RED + ca.Style.BRIGHT + text + ca.Style.RESET_ALL)
 
 def p_warning(text):
-    print(ca.Fore.YELLOW + ca.Style.BRIGHT + text)
-    print(ca.Style.RESET_ALL, end='')
+    print(ca.Fore.YELLOW + ca.Style.BRIGHT + text + ca.Style.RESET_ALL)
+
+def s_header(text):
+    return ca.Fore.CYAN + ca.Style.BRIGHT + text + ca.Style.RESET_ALL
+
+def s_hint(text):
+    return ca.Fore.LIGHTBLACK_EX + ca.Style.BRIGHT + text + ca.Style.RESET_ALL
+
+def s_success(text):
+    return ca.Fore.GREEN + ca.Style.BRIGHT + text + ca.Style.RESET_ALL
+
+def s_fail(text):
+    return ca.Fore.RED + ca.Style.BRIGHT + text + ca.Style.RESET_ALL
+
+def s_warning(text):
+    return ca.Fore.YELLOW + ca.Style.BRIGHT + text + ca.Style.RESET_ALL
 
 def replace_str(fpath, d):
     ''' Replace the string in a given text file according
@@ -241,8 +251,8 @@ def monthly2annual(ds):
 def monthly2season(ds):
     month_length = ds.time.dt.days_in_month
     wgts = month_length.groupby('time.season') / month_length.groupby('time.season').mean()
-    ds_ann = (ds * wgts).groupby('time.season').mean('time')
-    return ds_ann.rename({'year':'time'})
+    ds_season = (ds * wgts).groupby('time.season').mean('time')
+    return ds_season
 
 def regrid_cam_se(dataset, weight_file):
     """

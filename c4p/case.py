@@ -96,8 +96,11 @@ class CESMCase:
             shutil.rmtree(self.case_dirpath) if os.path.exists(self.case_dirpath) else None
             shutil.rmtree(self.output_dirpath) if os.path.exists(self.output_dirpath) else None
 
-    def create(self, run_unsupported=False):
-        cmd = f'{self.codebase}/cime/scripts/create_newcase --case {self.case_dirpath} --res {self.res} --compset {self.compset} --mach {self.mach} --output-root {self.output_root}'
+    def create(self, run_unsupported=False, path_fix='cime'):
+        if path_fix == 'cime':
+            cmd = f'{self.codebase}/cime/scripts/create_newcase --case {self.case_dirpath} --res {self.res} --compset {self.compset} --mach {self.mach} --output-root {self.output_root}'
+        else:
+            cmd = f'{self.codebase}/scripts/create_newcase --case {self.case_dirpath} --res {self.res} --compset {self.compset} --mach {self.mach} --output-root {self.output_root}'
         if run_unsupported:
             cmd += ' --run-unsupported'
 

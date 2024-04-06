@@ -1,6 +1,6 @@
 from .case import PaleoSetup
 from .case import CESMCase
-from .pp import Archive, PPCase, Timeseries
+from .pp import Archive, PPCase
 from .visual import set_style
 from .rotation import Rotation
 
