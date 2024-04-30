@@ -254,6 +254,14 @@ def monthly2season(ds):
     ds_season = (ds * wgts).groupby('time.season').mean('time')
     return ds_season
 
+def annualize(ds, months=None):
+    months = list(range(1, 13)) if months is None else np.abs(months)
+    sds = ds.sel(time=ds['time.month'].isin(months))
+    anchor = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    idx = months[-1]-1
+    ds_ann = sds.resample(time=f'A-{anchor[idx]}').mean()
+    return ds_ann
+
 def regrid_cam_se(dataset, weight_file):
     """
     Regrid CAM-SE output using an existing ESMF weights file.

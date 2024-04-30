@@ -1,4 +1,88 @@
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import pathlib
+
+def showfig(fig, close=True):
+    '''Show the figure
+
+    Parameters
+    ----------
+    fig : matplotlib.pyplot.figure
+        The matplotlib figure object
+
+    close : bool
+        if True, close the figure automatically
+
+    '''
+    # if in_notebook:
+    #     try:
+    #         from IPython.display import display
+    #     except ImportError as error:
+    #         # Output expected ImportErrors.
+    #         print(f'{error.__class__.__name__}: {error.message}')
+
+    #     display(fig)
+
+    # else:
+    #     plt.show()
+
+    plt.show()
+
+    if close:
+        closefig(fig)
+
+def closefig(fig=None):
+    '''Show the figure
+
+    Parameters
+    ----------
+    fig : matplotlib.pyplot.figure
+        The matplotlib figure object
+
+    '''
+    if fig is not None:
+        plt.close(fig)
+    else:
+        plt.close()
+
+def savefig(fig, path, verbose=True, **kws):
+    ''' Save a figure to a path
+
+    Parameters
+    ----------
+    fig : matplotlib.pyplot.figure
+        the figure to save
+    path : str
+        the path to save the figure, can be ignored and specify in "settings" instead
+    settings : dict
+        the dictionary of arguments for plt.savefig(); some notes below:
+        - "path" must be specified in settings if not assigned with the keyword argument;
+          it can be any existed or non-existed path, with or without a suffix;
+          if the suffix is not given in "path", it will follow "format"
+        - "format" can be one of {"pdf", "eps", "png", "ps"}
+        
+    '''
+    savefig_args = {'bbox_inches': 'tight', 'path': path}
+    savefig_args.update(**kws)
+
+    path = pathlib.Path(savefig_args['path'])
+    savefig_args.pop('path')
+
+    dirpath = path.parent
+    if not dirpath.exists():
+        dirpath.mkdir(parents=True, exist_ok=True)
+        if verbose:
+            print(f'Directory created at: "{dirpath}"')
+
+    path_str = str(path)
+    if path.suffix not in ['.eps', '.pdf', '.png', '.ps']:
+        path = pathlib.Path(f'{path_str}.pdf')
+
+    fig.savefig(path_str, **savefig_args)
+    plt.close(fig)
+
+    if verbose:
+        print(f'Figure saved at: "{str(path)}"')
 
 def set_style(style='journal', font_scale=1.0):
     ''' Modify the visualization style
@@ -9,7 +93,7 @@ def set_style(style='journal', font_scale=1.0):
     Parameters
     ----------
     
-    style : {journal,web,matplotlib,_spines, _nospines,_grid,_nogrid}
+    style : {journal, web, matplotlib, _spines, _nospines,_grid,_nogrid}
         set the styles for the figure:
             - journal (default): fonts appropriate for paper
             - web: web-like font (e.g. ggplot)
@@ -32,6 +116,12 @@ def set_style(style='journal', font_scale=1.0):
     }
 
     style_dict = {}
+    inline_rc = mpl.rcParamsDefault.copy()
+    inline_rc.update({
+        'interactive': True,
+    })
+    mpl.rcParams.update(inline_rc)
+
     if 'journal' in style:
         style_dict.update({
             'axes.axisbelow': True,
@@ -100,8 +190,11 @@ def set_style(style='journal', font_scale=1.0):
             'xtick.minor.width': 0,
             'ytick.minor.width': 0,
         })
+    elif 'matplotlib' in style or 'default' in style:
+        mpl.rcParams.update(inline_rc)
     else:
-        raise ValueError(f'Style [{style}] not availabel!')
+        print(f'Style [{style}] not available! Setting to `matplotlib` ...')
+        mpl.rcParams.update(inline_rc)
 
     if '_spines' in style:
         style_dict.update({
@@ -132,3 +225,21 @@ def set_style(style='journal', font_scale=1.0):
 
     for d in [style_dict, font_dict]:
         mpl.rcParams.update(d)
+
+def infer_cmap(da):
+    if 'long_name' in da.attrs:
+        ln_lower = da.attrs['long_name'].lower()
+        if 'temperature' in ln_lower:
+            cmap = 'RdBu_r'
+        elif 'precipitation' in ln_lower:
+            cmap = 'BrBG'
+        elif 'correlation' in ln_lower:
+            cmap = 'RdBu_r'
+        elif 'R2' in ln_lower:
+            cmap = 'Reds'
+        elif 'salinity' in ln_lower:
+            cmap = 'PiYG'
+        else:
+            cmap = 'viridis'
+    
+    return cmap

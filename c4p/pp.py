@@ -1863,7 +1863,7 @@ class PPCase:
             vn = [vn]
 
         for v in vn:
-            if v in self.vars_info and v not in self.ds:
+            if v in self.vars_info:
                 comp, mdl, h_str = self.vars_info[v]
                 paths = sorted(glob.glob(
                     os.path.join(
@@ -1907,6 +1907,7 @@ class PPCase:
                     self.ds['lon'] = ds['lon']
 
                 utils.p_success(f'>>> PPCase.ds["{v}"] created')
+
             elif v in ['KMT', 'z_t', 'z_w']:
                 comp, mdl, h_str = self.vars_info['TEMP']
                 paths = sorted(glob.glob(
@@ -1926,8 +1927,6 @@ class PPCase:
                 
             elif v not in self.vars_info:
                 utils.p_warning(f'>>> Variable {v} not existed')
-            elif v in self.ds:
-                utils.p_warning(f'>>> Variable {v} already loaded as PPCase.ds["{v}"]')
 
         
         
@@ -2206,9 +2205,9 @@ class PPCase:
 
         return fig, ax
 
-    def calc_KMT(self):
+    def calc_KMT(self, load_idx=-1):
         self.load('KMT')
-        self.load('TEMP', load_idx=-1)
+        self.load('TEMP', load_idx=load_idx)
         ocn_grid = xr.Dataset()
         ocn_grid['lat'] = self.ds['TEMP'].TLAT
         ocn_grid['lon'] = self.ds['TEMP'].TLONG
@@ -2342,6 +2341,115 @@ class PPCase:
 
         return fig, ax
 
+    def calc_RAIN_HDO(self, load_idx=-1, clim=True, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        vn = 'RAIN_HDO'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        da = utils.monthly2annual(self.ds[vn])
+        da.name = vn
+        ds = da.to_dataset()
+        ds = ds.rename_dims({'lndgrid': 'ncol'})
+        ds['lat'] = self.ds['lat_lnd']
+        ds['lon'] = self.ds['lon_lnd']
+        da_rgd = utils.regrid_cam_se(ds, weight_file=weight_file)[vn]
+
+        if clim:
+            self.diagnostics[vn] = da_rgd.mean('time')
+        else:
+            self.diagnostics[vn] = da_rgd
+
+        self.diagnostics[vn].attrs = self.ds[vn].attrs
+
+        utils.p_success(f'>>> PPCase.diagnostics["{vn}"] created')
+
+    def calc_QRUNOFF(self, load_idx=-1, clim=True, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        vn = 'QRUNOFF'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        da = utils.monthly2annual(self.ds[vn])
+        da.name = vn
+        ds = da.to_dataset()
+        ds = ds.rename_dims({'lndgrid': 'ncol'})
+        ds['lat'] = self.ds['lat_lnd']
+        ds['lon'] = self.ds['lon_lnd']
+        da_rgd = utils.regrid_cam_se(ds, weight_file=weight_file)[vn]
+        da_rgd.attrs = self.ds[vn].attrs
+
+        if clim:
+            self.diagnostics['QRUNOFF'] = da_rgd.mean('time')
+        else:
+            self.diagnostics['QRUNOFF'] = da_rgd
+
+        utils.p_success(f'>>> PPCase.diagnostics["QRUNOFF"] created')
+
+    def calc_QOVER(self, load_idx=-1, clim=True, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        vn = 'QOVER'
+        self.load(vn, load_idx=load_idx)
+        self.ds[vn].load()
+        da = utils.monthly2annual(self.ds[vn])
+        da.name = vn
+        ds = da.to_dataset()
+        ds = ds.rename_dims({'lndgrid': 'ncol'})
+        ds['lat'] = self.ds['lat']
+        ds['lon'] = self.ds['lon']
+        da_rgd = utils.regrid_cam_se(ds, weight_file=weight_file)[vn]
+        da_rgd.attrs = self.ds[vn].attrs
+
+        if clim:
+            self.diagnostics['QOVER'] = da_rgd.mean('time')
+        else:
+            self.diagnostics['QOVER'] = da_rgd
+
+        utils.p_success(f'>>> PPCase.diagnostics["QOVER"] created')
+    
+    def calc_PRECT(self, load_idx, clim=True, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
+        self.load('PRECC', load_idx=load_idx)
+        self.load('PRECL', load_idx=load_idx)
+        pr = self.ds['PRECC'] + self.ds['PRECL']
+        da = utils.monthly2annual(pr)
+        da.name = 'PRECT'
+        ds = da.to_dataset()
+        ds['lat'] = self.ds['lat']
+        ds['lon'] = self.ds['lon']
+        da_rgd = utils.regrid_cam_se(ds, weight_file=weight_file)['PRECT']
+
+        if clim:
+            self.diagnostics['PRECT'] = da_rgd.mean('time')
+        else:
+            self.diagnostics['PRECT'] = da_rgd
+
+        utils.p_success(f'>>> PPCase.diagnostics["PRECT"] created')
+
+    # def plot_PRECT(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(0, 3*1e-7, 31), cbar_labels=np.linspace(0, 3*1e-7, 7),
+    #              transform=ccrs.PlateCarree(), cmap='RdBu_r', extend='both', coastlinewidth=0.5,
+    #              cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='pr rate [m/s]',
+    #              central_longitude=180, title='Annual Mean Precipitation Rate'):
+    #     if clim:
+    #         pr = self.diagnostics['PRECT']
+    #     else:
+    #         pr = self.diagnostics['PRECT'][load_idx]
+            
+    #     fig = plt.figure(figsize=figsize)
+    #     ax = plt.subplot(projection=ccrs.Robinson(central_longitude=central_longitude))
+    #     ax.set_global()
+    #     ax.set_title(title)
+
+    #     # im = ax.contourf(pr.lon, pr.lat, pr, levels, transform=transform, cmap=cmap, extend=extend)
+    #     im = ax.contourf(pr.lon, pr.lat, pr, transform=transform, cmap=cmap, extend=extend)
+
+    #     if 'KMT' not in self.diagnostics:
+    #         self.calc_KMT(load_idx=load_idx)
+
+    #     kmt = self.diagnostics['KMT']
+    #     field_var_c, lon_c = cutil.add_cyclic_point(kmt, kmt.lon)
+    #     ax.contour(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth, zorder=99)
+
+    #     cbar = fig.colorbar(im, ax=ax, orientation=cbar_orientation, shrink=cbar_shrink, pad=cbar_pad)
+    #     cbar.ax.set_title(cbar_title)
+    #     cbar.set_ticks(cbar_labels)
+            
+    #     return fig, ax
+
     def calc_TS(self, load_idx=-1, clim=True, weight_file='/glade/u/home/fengzhu/Scripts/regrid/map_ne16np4_TO_1x1d_aave.240225.nc'):
         vn = 'TS'
         self.load(vn, load_idx=load_idx)
@@ -2376,7 +2484,8 @@ class PPCase:
         im = ax.contourf(ts.lon, ts.lat, ts, levels, transform=transform, cmap=cmap, extend=extend)
 
         if 'KMT' not in self.diagnostics:
-            self.calc_KMT()
+            self.calc_KMT(load_idx=load_idx)
+
         kmt = self.diagnostics['KMT']
         field_var_c, lon_c = cutil.add_cyclic_point(kmt, kmt.lon)
         ax.contour(lon_c, kmt.lat, field_var_c, levels=[0, 1], colors='k', transform=transform, linewidths=coastlinewidth, zorder=99)
@@ -2434,7 +2543,8 @@ class PPCase:
         vn = 'R18O'
         self.load(vn, load_idx=load_idx)
         self.ds[vn].load()
-        d18O = utils.monthly2annual(self.ds[vn][:,0])
+        R18O = utils.monthly2annual(self.ds[vn][:,0])
+        d18O = (R18O - 1)*1e3
         ocn_grid = xr.Dataset()
         ocn_grid['lat'] = d18O.TLAT
         ocn_grid['lon'] = d18O.TLONG
@@ -2452,7 +2562,7 @@ class PPCase:
 
         utils.p_success(f'>>> PPCase.diagnostics["SSd18O"] created')
 
-    def plot_SSd18O(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(0.992, 1.002, 21), cbar_labels=np.linspace(0.992, 1.002, 6),
+    def plot_SSd18O(self, clim=True, load_idx=-1, figsize=[8, 5], levels=np.linspace(0.5, 1.5, 21), cbar_labels=np.linspace(0.5, 1.5, 11),
                  transform=ccrs.PlateCarree(), cmap='viridis', extend='both', coastlinewidth=1,
                  cbar_orientation='horizontal', cbar_shrink=0.7, cbar_pad=0.1, cbar_title='d18O [permil]',
                  central_longitude=180, title='Annual Mean Sea-surface d18O'):
@@ -2474,6 +2584,32 @@ class PPCase:
         cbar.set_ticks(cbar_labels)
 
         return fig, ax
+
+    def calc_vice(self, load_idx=-1, clim=True):
+        for vn in ['vicen001', 'vicen002', 'vicen003', 'vicen004', 'vicen005']:
+            self.load(vn, load_idx=load_idx)
+            self.ds[vn].load()
+
+        vice = utils.monthly2annual(self.ds['vicen001']+self.ds['vicen002']+self.ds['vicen003']+self.ds['vicen004']+self.ds['vicen005'])
+        ocn_grid = xr.Dataset()
+        ocn_grid['lat'] = vice.TLAT
+        ocn_grid['lon'] = vice.TLON
+        regridder = xe.Regridder(
+            ocn_grid, xe.util.grid_global(1, 1, cf=True, lon1=360),
+            method='bilinear',
+            periodic=True,
+        )
+
+        vice_rgd = regridder(vice)
+
+        if clim:
+            self.diagnostics['vice'] = vice_rgd.mean('time')
+        else:
+            self.diagnostics['vice'] = vice_rgd
+
+        self.diagnostics['vice'].attrs = self.ds['vicen001'].attrs
+        self.diagnostics['vice'].attrs.update({'long_name': 'ice volume, categories 001+002+003+004+005'})
+        utils.p_success(f'>>> PPCase.diagnostics["vice"] created')
 
 
     def calc_SST(self, load_idx=-1, clim=True):
@@ -2531,13 +2667,14 @@ class PPCase:
             
         return fig, ax
 
-    def calc_MLD(self, vn='XMXL', load_idx=-1, season='DJF'):
+    def calc_MLD(self, vn='XMXL', load_idx=-1, months=None, clim=True):
         self.load(vn, load_idx=load_idx)
         self.ds[vn].load()
-        if season == 'ann':
-            da = utils.monthly2annual(self.ds[vn])
-        else:
-            da = utils.monthly2season(self.ds[vn]).sel(season=season)
+        # if season == 'ann':
+        #     da = utils.monthly2annual(self.ds[vn])
+        # else:
+        #     da = utils.monthly2season(self.ds[vn]).sel(season=season)
+        da = utils.annualize(self.ds[vn], months=months)
 
         ocn_grid = xr.Dataset()
         ocn_grid['lat'] = da.TLAT
@@ -2549,10 +2686,11 @@ class PPCase:
         )
 
         da_rgd = regridder(da)
-        if season == 'ann':
+        if clim:
             self.diagnostics['MLD'] = da_rgd.mean('time')
         else:
             self.diagnostics['MLD'] = da_rgd
+
         utils.p_success(f'>>> PPCase.diagnostics["MLD"] created')
         
     def plot_MLD(self, figsize=[8, 5], levels=np.linspace(0, 500, 21), cbar_labels=np.linspace(0, 500, 11),
@@ -2575,9 +2713,9 @@ class PPCase:
 
         return fig, ax
 
-    def calc_GMST(self):
+    def calc_GMST(self, load_idx=None):
         vn = 'TS'
-        self.load(vn)
+        self.load(vn, load_idx=load_idx)
         self.ds[vn].load()
         da = utils.monthly2annual(self.ds[vn])
         da_gm = da.weighted(self.ds.gw_atm).mean(list(self.ds.gw_atm.dims))

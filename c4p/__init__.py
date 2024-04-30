@@ -1,7 +1,13 @@
 from .case import PaleoSetup
 from .case import CESMCase
 from .pp import Archive, PPCase
-from .visual import set_style
+from .visual import (
+    set_style,
+    showfig,
+    closefig,
+    savefig,
+)
+
 from .rotation import Rotation
 
 set_style(style='journal', font_scale=1.2)

@@ -20,11 +20,9 @@ class PaleoSetup:
         self.work_dirpath = work_dirpath
 
         hostname = platform.node()
-        if hostname[:7] == 'derecho':
+        if hostname[:2] == 'de':
             self.hostname = 'derecho'
-        elif hostname[:8] == 'cheyenne':
-            self.hostname = 'cheyenne'
-        elif hostname[:6] == 'casper':
+        elif hostname[:2] == 'ca':
             self.hostname = 'casper'
         else:
             utils.p_warning(f'Unknown hostname: {hostname}')
