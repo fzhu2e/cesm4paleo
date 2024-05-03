@@ -70,8 +70,7 @@ class ROF:
                 'INC_NETCDF = -I/glade/apps/opt/netcdf/4.2/intel/default/include': f'INC_NETCDF = -I{self.netcdf_inc_path}',
             },
         )
-        utils.run_shell(f'chmod +x {fpath_new}')
-        utils.exec_script(fpath_new)
+        utils.exec_script(fpath_new, chmod_add_x=True, modules=['ncarenv/23.09', 'intel/2024.0.2'])
 
     def plot_rof(self,
             path_plotrdirc_csh=os.path.join(cwd, './src/rof/plotrdirc.csh'),

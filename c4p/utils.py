@@ -80,14 +80,21 @@ def copy(src, dst=None):
     sh.cp(src, dst)
     return dst
 
-def exec_script(fpath, args=None, timeout=None, chmod_add_x=False):
+def exec_script(fpath, args=None, timeout=None, chmod_add_x=False, modules=None):
     if chmod_add_x:
         run_shell(f'chmod +x {fpath}')
+    
+    cmd = ''
+    if modules is not None:
+        cmd += f'source $LMOD_ROOT/lmod/init/zsh && module load '
+        for mod in modules:
+            cmd += f'{mod} '
+        cmd += '&& '
 
     if args is None:
-        cmd = fpath
+        cmd += fpath
     else:
-        cmd = f'{fpath} {args}'
+        cmd += f'{fpath} {args}'
 
     run_shell(cmd, timeout=timeout)
 
