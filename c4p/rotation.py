@@ -16,6 +16,11 @@ cwd = os.path.dirname(__file__)
 
 class Rotation:
     def __init__(self, ds, lat_dn='nlat', lon_dn='nlon', lat_vn='TLAT', lon_vn='TLONG', rotation_file=None, polygon_file=None):
+        '''
+        Args:
+            lat_dn (str): lat name in coordinates
+            lat_vn (str): lat name in variable
+        '''
         self.ds = ds
         self.lat_dn = lat_dn
         self.lon_dn = lon_dn
@@ -24,13 +29,16 @@ class Rotation:
         self.rotation_file = os.path.join(cwd, 'src/rotation/Muller2019-Young2019-Cao2020_CombinedRotations.rot') if rotation_file is None else rotation_file
         self.polygon_file = os.path.join(cwd, 'src/rotation/Global_EarthByte_GPlates_PresentDay_StaticPlatePolygons.gpmlz') if polygon_file is None else polygon_file
 
+        if np.max(self.ds[self.lon_vn]) > 180:
+            self.lons = (self.ds[self.lon_vn].data + 180) % 360 - 180  # lon: (0, 360) -> (-180, 180)
+            self.ds = self.ds.assign_coords({self.lon_vn: ((self.ds[self.lon_vn]+180) % 360)-180})
+            self.ds = self.ds.sortby(self.ds[self.lon_vn])
+
         self.lats = self.ds[self.lat_vn]
         self.lons = self.ds[self.lon_vn]
         if len(self.lats.shape) == 1:
             self.lons, self.lats = np.meshgrid(self.lons, self.lats)  # 1D -> 2D lats and lons
             
-        if np.max(self.ds[self.lon_vn]) > 180:
-            self.lons = (self.ds[self.lon_vn] + 180) % 360 - 180  # lon: (0, 360) -> (-180, 180)
 
 
     def recon(self, vn, t_ma=15):
@@ -56,8 +64,14 @@ class Rotation:
                 raise ValueError(f'Cannot handle the case: len(self.ds[{v}].dims) = {len(self.ds[v].dims)}')
 
         values_flat = np.array(values_flat)
+        try:
+            lats = self.lats.data.flatten()
+            lons = self.lons.data.flatten()
+        except:
+            lats = self.lats.flatten()
+            lons = self.lons.flatten()
         
-        for i, (lat, lon) in enumerate(zip(self.lats.data.flatten(), self.lons.data.flatten())):
+        for i, (lat, lon) in enumerate(zip(lats, lons)):
             pt_feature = pygplates.Feature()
             pt_feature.set_geometry(pygplates.PointOnSphere(lat, lon))   # Note: we specify latitude first here! 
             for k in range(values_flat.shape[0]):
@@ -108,8 +122,8 @@ class Rotation:
 
         utils.p_success('>>> Rotation.ds_rotate created')
 
-    def plot(self, vn, level=0, figsize=[8, 8]):
-        fig, ax = plt.subplots(2, 1, figsize=figsize)
+    def plot(self, vn, level=0, figsize=[8, 12]):
+        fig, ax = plt.subplots(3, 1, figsize=figsize)
 
         if len(self.ds[vn].dims) == 2:
             self.ds[vn].plot(ax=ax[0])
@@ -117,12 +131,18 @@ class Rotation:
 
             self.ds_rotate[vn].plot(ax=ax[1])
             ax[1].set_title('After Rotation')
+
+            (self.ds_rotate[vn]-self.ds[vn]).plot(ax=ax[2])
+            ax[2].set_title('Difference')
         else:
             self.ds[vn][level].plot(ax=ax[0])
             ax[0].set_title('Before Rotation')
 
             self.ds_rotate[vn][level].plot(ax=ax[1])
             ax[1].set_title('After Rotation')
+
+            (self.ds_rotate[vn]-self.ds[vn]).plot(ax=ax[2])
+            ax[2].set_title('Difference')
 
         fig.tight_layout()
 

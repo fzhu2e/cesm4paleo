@@ -51,7 +51,7 @@ class Mapping:
         args = f'-fatm {self.atm_scrip} -natm {self.atm_grid_name} -focn {self.rof_scrip} -nocn {self.rof_grid_name} --nogridcheck'
         print(f'CMD >>> {script} {args}')
         if qsub:
-            utils.qsub_script(script, args=args, name=f'{self.job_name}_ocn2atm', account=self.account, **qsub_kws)
+            utils.qsub_script(script, args=args, name=f'{self.job_name}_rof2atm', account=self.account, **qsub_kws)
         else:
             utils.exec_script(script, args=args)
 
