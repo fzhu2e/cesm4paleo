@@ -94,6 +94,18 @@ class CESMCase:
             shutil.rmtree(self.case_dirpath) if os.path.exists(self.case_dirpath) else None
             shutil.rmtree(self.output_dirpath) if os.path.exists(self.output_dirpath) else None
 
+    def clone(self, clone_target_dirpath, path_fix='cime'):
+        if path_fix == 'cime':
+            cmd = f'{self.codebase}/cime/scripts/create_clone --case {self.case_dirpath} --clone {clone_target_dirpath} --cime-output-root {self.case_dirpath}'
+        else:
+            cmd = f'{self.codebase}/scripts/create_clone --case {self.case_dirpath} --clone {clone_target_dirpath} --cime-output-root {self.case_dirpath}'
+
+        os.environ['PROJECT'] = self.account
+        utils.run_shell(cmd)
+
+        os.chdir(self.case_dirpath)
+        utils.p_success(f'>>> Current directory switched to: {self.case_dirpath}')
+
     def create(self, run_unsupported=False, path_fix='cime'):
         if path_fix == 'cime':
             cmd = f'{self.codebase}/cime/scripts/create_newcase --case {self.case_dirpath} --res {self.res} --compset {self.compset} --mach {self.mach} --output-root {self.output_root}'
@@ -115,8 +127,10 @@ class CESMCase:
         for k, v in modification_dict.items():
             utils.run_shell(f'./xmlchange {k}={v}')
 
-    def setup(self):
-        utils.run_shell('./case.setup')
+    def setup(self, arg):
+        cmd = './case.setup'
+        if arg is not None: cmd += f' --{arg}'
+        utils.run_shell(cmd)
 
     def build(self, clean=False, **qcmd_kws):
         cmd = './case.build'
