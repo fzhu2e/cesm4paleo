@@ -127,18 +127,23 @@ class CESMCase:
         for k, v in modification_dict.items():
             utils.run_shell(f'./xmlchange {k}={v}')
 
-    def setup(self, arg):
+    def setup(self, arg=None):
         cmd = './case.setup'
         if arg is not None: cmd += f' --{arg}'
         utils.run_shell(cmd)
 
-    def build(self, clean=False, **qcmd_kws):
+    # def build(self, clean=False, **qcmd_kws):
+    #     cmd = './case.build'
+    #     if clean:
+    #         cmd += ' --clean'
+    #         utils.run_shell(cmd)
+    #     else:
+    #         utils.qcmd_script(cmd, account=self.account, **qcmd_kws)
+
+    def build(self, clean=False):
         cmd = './case.build'
-        if clean:
-            cmd += ' --clean'
-            utils.run_shell(cmd)
-        else:
-            utils.qcmd_script(cmd, account=self.account, **qcmd_kws)
+        if clean: cmd += ' --clean'
+        utils.run_shell(cmd)
 
     def submit(self):
         utils.run_shell('./case.submit')
