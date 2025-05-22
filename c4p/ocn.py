@@ -2,7 +2,10 @@ import os, glob
 import numpy as np
 from IPython.display import display, Image, IFrame
 from datetime import date
+from datetime import datetime
+from scipy.interpolate import RegularGridInterpolator
 import xarray as xr
+import xesmf as xe
 
 from . import utils
 
@@ -20,7 +23,52 @@ class OCN:
         for k, v in self.__dict__.items():
             utils.p_success(f'>>> OCN.{k}: {v}')
 
-    def create_ocn_grid(self, path_topo, iter=1, lonnp=None, lonsp=None, latnp=None, latsp=None, jcon=None,
+    def interp_topo(self, fili, filo):
+        ''' Interpolate the topo file from 1x1 to 0.5x0.5
+        '''
+        if os.path.exists(filo):
+            os.remove(filo)
+
+        # Load input data
+        ds_in = xr.open_dataset(fili)
+        topo_in = ds_in['topo']
+        if np.any(topo_in.lon < 0):
+            lon_range = np.arange(-179.75, 180, 0.5)
+        else:
+            lon_range = np.arange(0.25, 360, 0.5)
+
+        lat_range = np.arange(-89.75, 90, 0.5)
+
+        ds_out = xr.Dataset(
+            {
+                'lat': (['lat'], lat_range),
+                'lon': (['lon'], lon_range)
+            }
+        )
+        regridder = xe.Regridder(topo_in, ds_out, method='bilinear', periodic=True, reuse_weights=False, ignore_degenerate=True)
+        topo_out = regridder(topo_in)
+        topo_out.name = 'topo'
+        topo_out.attrs['long_name'] = 'topo 0.5x0.5 resolution'
+        topo_out['lat'].attrs['units'] = "degrees_north"
+        topo_out['lon'].attrs['units'] = "degrees_east"
+
+        # Fill missing values in SH
+        for i in range(4):
+            if topo_out.isel(lat=i).isnull().any():
+                topo_out[i, :] = topo_out[i + 1, :]
+
+        for i in range(-5, 0):
+            if topo_out.isel(lat=i).isnull().any():
+                topo_out[i, :] = topo_out[i - 1, :]
+
+        ds_out['topo'] = topo_out
+        ds_out.to_netcdf(filo)
+
+
+    def create_ocn_grid(
+            self, path_topo, iter=1,
+           lonnp=None, lonsp=None, latnp=None, latsp=None,
+           nlatn=None, nlats=None, dsig=None, jcon=None,
             path_vertical_grid=os.path.join(cwd, './src/ocn/gx1v6_vert_grid'),
             path_mk_grid=os.path.join(cwd, './src/ocn/mk_ocn_grid/mk_grid_1x1_template.csh'),
             path_ns_dipole_exe=os.path.join(cwd, './src/ocn/mk_ocn_grid/ns_dipole'),
@@ -71,14 +119,35 @@ class OCN:
             utils.replace_str(
                 fpath,
                 {
-                    'latsp   =   -69.': f'latsp = {latsp}',
+                    'latsp   =  -69': f'latsp = {latsp}',
+                }
+            )
+        if nlatn is not None:
+            utils.replace_str(
+                fpath,
+                {
+                    'nlatn   = 205': f'nlatn = {nlatn}',
+                }
+            )
+        if nlats is not None:
+            utils.replace_str(
+                fpath,
+                {
+                    'nlats   = 179': f'nlats = {nlats}',
+                }
+            )
+        if dsig is not None:
+            utils.replace_str(
+                fpath,
+                {
+                    'dsig    = 23.': f'dsig = {dsig}',
                 }
             )
         if jcon is not None:
             utils.replace_str(
                 fpath,
                 {
-                    'jcon   =   11': f'jcon = {jcon}',
+                    'jcon    = 11': f'jcon = {jcon}',
                 }
             )
 
@@ -119,7 +188,7 @@ class OCN:
 
         fig_paths = sorted(glob.glob('*.pdf'))
         for path in fig_paths:
-            utils.run_shell(f'convert {path} {path}.png')
+            utils.run_shell(f'magick {path} {path}.png')
             display(Image(f'{path}.png'))
 
     def gen_region_mask_transports(self, iter=1,

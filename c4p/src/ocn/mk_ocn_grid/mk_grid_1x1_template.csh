@@ -1,6 +1,6 @@
-#!/bin/csh -fv 
+#!/bin/csh
 
-set echo
+# set echo
 # set verbose
 ###################################################################
 # Required input file:  
@@ -120,8 +120,13 @@ ln -s $vrtgridpath/$vrtgrid .
 # RUN GRID ROUTINES
 # This must have been compiled. 
 #################################
+echo 'Running ns_dipole'
 ./ns_dipole < input.$ITER.ns_dipole  >! output.$ITER.ns_dipole
+
+echo 'Running paleotopo'
 ./paleotopo < input.$ITER.paleotopo  >! output.$ITER.paleotopo
+
+echo 'Running grid_bin2nc'
 ./grid_bin2nc < input.$ITER.grid_bin2nc >! output.$ITER.bin2nc
 
 #################################

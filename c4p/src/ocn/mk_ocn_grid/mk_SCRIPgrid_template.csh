@@ -1,6 +1,6 @@
-#!/bin/csh -fv 
+#!/bin/csh
 
-set echo off
+# set echo off
 # set verbose
 
 set DATE    = "`date +%y%m%d`"
