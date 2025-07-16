@@ -1,7 +1,7 @@
 #! /bin/csh -f
 
-set echo 
-set verbose
+# set echo 
+# set verbose
 
 #---------------------------------------------------------------------------
 # Make the input_template directory and input_template files for ocn and ice
@@ -36,7 +36,7 @@ EOF
 
  sed -f commands.sed modregmsk_edit.f >! modregmsk.f 
 
- ifort -convert big_endian -o modregmsk.be modregmsk.f
+ ifort -diag-disable=10448 -convert big_endian -o modregmsk.be modregmsk.f
 #ifort -convert big_endian -o modregmsk.le modregmsk.f
 
  ./modregmsk.be

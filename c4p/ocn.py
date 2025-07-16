@@ -1,4 +1,5 @@
 import os, glob
+os.environ['UCX_TLS'] = 'tcp,self,shm'
 import numpy as np
 from IPython.display import display, Image, IFrame
 from datetime import date
@@ -202,6 +203,7 @@ class OCN:
             fpath_csh,
             {
                 '<casename>': self.casename,
-                '<iter>': iter,
+                '<iter>': str(iter),
             },
         )
+        utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && {fpath_csh}')

@@ -50,6 +50,8 @@ class LND:
         utils.p_header('>>> Generate land surface data ...')
         fpath_csh = utils.copy(path_csh, 'run_paleo_mkraw_cesm1.csh')
         fpath_f90 = utils.copy(path_f90, 'paleo_mkraw_cesm1_sed.F90')
+        fpath_lsm  = utils.copy(lsm_path, 'lsm.nc')
+        fpath_topo  = utils.copy(topo_path, 'topo.nc')
 
         if topo_path is None:
             topo_path = f'./topo.{self.res}deg.{self.casename}.nc'
@@ -58,8 +60,8 @@ class LND:
             fpath_csh,
             {
                 '<casename>': self.casename,
-                '<lsm_file>': os.path.abspath(lsm_path),
-                '<topo-bath_file>': os.path.abspath(topo_path),
+                '<lsm_file>': 'lsm.nc',
+                '<topo-bath_file>': 'topo.nc',
                 'set INPUT_SOI_DATA = /glade/p/cesmdata/cseg/inputdata/lnd/clm2/rawdata/mksrf_soitex.10level.c010119.nc': 'set INPUT_SOI_DATA = mksrf_soi.nc',
                 'set INPUT_ORG_DATA = mksrf_zon_organic.10level.nc': 'set INPUT_ORG_DATA = mksrf_org.nc',
             },
@@ -86,11 +88,11 @@ class LND:
         utils.copy(path_makefile)
         utils.copy(path_org, 'mksrf_org.nc')
         utils.copy(path_soi, 'mksrf_soi.nc')
-        utils.run_shell(f'chmod +x {fpath_csh}')
-        utils.qsub_script(
-            fpath_csh,
-            name='paleo_mkraw_cesm1', account=self.account, **qsub_kws,
-        )
+        utils.run_shell(f'chmod +x {fpath_csh} && {fpath_csh}')
+        # utils.qsub_script(
+        #     fpath_csh,
+        #     name='paleo_mkraw_cesm1', account=self.account, **qsub_kws,
+        # )
 
     def gen_scrip(self, lanwat_file, path_ncl=os.path.join(cwd, './src/lnd/mkscripgrid_template.ncl')):
         utils.p_header('>>> Create the SCRIP grid ...')
