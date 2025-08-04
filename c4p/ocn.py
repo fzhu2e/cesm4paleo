@@ -167,8 +167,10 @@ class OCN:
         utils.replace_str(
             fpath,
             {
-                'popgriddir = <workspace>': f'popgriddir = {self.work_dirpath}',
-                'scripdir   = <workspace>': f'scripdir   = {self.work_dirpath}',
+                # 'popgriddir = <workspace>': f'popgriddir = {self.work_dirpath}',
+                # 'scripdir   = <workspace>': f'scripdir   = {self.work_dirpath}',
+                'popgriddir = <workspace>': f'popgriddir = .',
+                'scripdir   = <workspace>': f'scripdir   = .',
                 '<iter>': f'{self.configs["iter"]}',
                 '<gridname>': self.casename,
                 '<case>': self.casename,

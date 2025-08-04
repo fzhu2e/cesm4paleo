@@ -24,9 +24,10 @@ begin
   ;
 
   name  = "<casename>"                    ; name time period
-  ipath = "./"
+  ;ipath = "./"
   fn1   = "<lanwat_file>"
-  f1    = addfile(ipath + fn1,"r")
+  ;f1    = addfile(ipath + fn1,"r")
+  f1    = addfile(fn1,"r")
   ilat   = f1->lat
   ilon   = f1->lon
   latS  = f1->EDGES

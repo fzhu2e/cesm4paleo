@@ -38,7 +38,7 @@ class ROF:
         )
         utils.run_shell(f'source $LMOD_ROOT/lmod/init/zsh && module load ncl && ncl {fpath}', timeout=3)
 
-    def gen_rof(self,
+    def gen_rof(self, res='1x1',
             path_rdirc_template_csh=os.path.join(cwd, './src/rof/rdirc_template.csh'),
             path_topo2rdirc_sed_f90=os.path.join(cwd, './src/rof/topo2rdirc_sed.F90'),
             path_Makefile=os.path.join(cwd, './src/rof/Makefile'),
@@ -50,14 +50,22 @@ class ROF:
             fpath_new,
             {
                 '<casename>': self.casename,
-                '<path/topography-bathymetry_file>': f'topo.1x1deg.{self.casename}.nc',
+                '<path/topography-bathymetry_file>': f'topo.{res}deg.{self.casename}.nc',
             },
         )
+        if res == '1x1':
+            nlon, nlat = 360, 180
+        elif res == '0.5x0.5':
+            nlon, nlat = 720, 360
+        elif res == '2x2':
+            nlon, nlat = 180, 90
 
         fpath = utils.copy(path_topo2rdirc_sed_f90)
         utils.replace_str(
             fpath,
             {
+                'integer, parameter :: nlon = 360': f'integer, parameter :: nlon = {nlon}',
+                'integer, parameter :: nlat = 180': f'integer, parameter :: nlat = {nlat}',
                 'pause': 'WRITE(*, *)',  # to avoid the prompts
             },
         )

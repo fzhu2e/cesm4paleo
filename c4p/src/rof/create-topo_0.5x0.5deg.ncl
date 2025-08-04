@@ -57,12 +57,12 @@ lat05deg@long_name = "latitude"
 
 ; =====================================
 
- top05 = new((/dimsizes(lat05deg), dimsizes(lon05deg)/),"float",fmsg)
-
- top05!0   = "lat"
- top05&lat = lat05deg
- top05!1   = "lon"
- top05&lon = lon05deg
+; top05 = new((/dimsizes(lat05deg), dimsizes(lon05deg)/),"float",fmsg)
+;
+; top05!0   = "lat"
+; top05&lat = lat05deg
+; top05!1   = "lon"
+; top05&lon = lon05deg
 
 ; =====================================
 
