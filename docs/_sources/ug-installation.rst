@@ -71,7 +71,6 @@ Then install some dependencies via :code:`conda`:
 .. code-block:: bash
 
     conda install jupyter notebook cartopy xesmf
-    conda install -c conda-forge pyglates
 
 Once the above dependencies have been installed, simply
 
