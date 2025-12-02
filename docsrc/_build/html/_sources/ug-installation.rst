@@ -63,14 +63,14 @@ Taking a clean installation as example, first let's create a new environment nam
 
 .. code-block:: bash
 
-    conda create -n c4p-env python=3.10
+    conda create -n c4p-env python=3.12
     conda activate c4p-env
 
 Then install some dependencies via :code:`conda`:
 
 .. code-block:: bash
 
-    conda install jupyter notebook cartopy
+    conda install jupyter notebook cartopy xesmf
 
 Once the above dependencies have been installed, simply
 

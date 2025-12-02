@@ -80,6 +80,22 @@ class ROF:
         )
         utils.exec_script(fpath_new, chmod_add_x=True, modules=['ncarenv/23.09', 'intel/2024.0.2'])
 
+    def gen_rof_nc2ascii(self, nc_path, casename):
+        ds = xr.open_dataset(nc_path)
+        ascii_fname = f'fort.13_{casename}'
+        xc = ds['xc'].values
+        yc = ds['yc'].values
+        rdirc = ds['RTM_FLOW_DIRECTION'].values
+
+        xc_flat = xc.flatten()
+        yc_flat = yc.flatten()
+        rdirc_flat = rdirc.flatten()
+
+        data = np.column_stack((yc_flat, xc_flat, rdirc_flat))
+        np.savetxt(ascii_fname, data, fmt='%.6f %.6f %d')
+        utils.p_success(f'>>> Ascii file generated: {ascii_fname}.')
+
+
     def plot_rof(self,
             path_plotrdirc_csh=os.path.join(cwd, './src/rof/plotrdirc.csh'),
             path_plotrdirc_ncl=os.path.join(cwd, './src/rof/plot_rdirc.ncl'),

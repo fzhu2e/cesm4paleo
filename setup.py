@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='c4p',  # required
-    version='2025.5.22',
+    version='2025.12.2',
     description='c4p: CESM for Paleo',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -22,10 +22,12 @@ setup(
     classifiers=[
         'Natural Language :: English',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     install_requires=[
         'colorama',
         'tqdm',
+        'scipy',
         'xarray',
         'netCDF4',
         'nc-time-axis',

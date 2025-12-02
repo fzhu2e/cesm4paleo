@@ -1,6 +1,5 @@
 from .case import PaleoSetup
 from .case import CESMCase
-from .pp import Archive, PPCase
 from .visual import (
     set_style,
     showfig,
